@@ -17,64 +17,116 @@ const Canvas = () => {
     const [pos, setPos] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 })
 
     const [clickPos, setClickPos] = React.useState({ x: 0, y: 0 })
+    const [lastTouch, setLastTouch] = React.useState({ x: 0, y: 0 })
     const [isClicking, setIsClicking] = React.useState(false)
 
     const [notes, setNotes] = React.useState<
-        { content: string; charWidth: number; offset: { x: number; y: number } }[]
+        {
+            content: string
+            charWidth: number
+            offset: { x: number; y: number }
+        }[]
     >([{ content: 'test', charWidth: 5, offset: { x: 100, y: 500 } }])
+
     const [noteDraft, setNoteDraft] = React.useState<{
         saveDraft: (content: string) => void
         offset: { x: number; y: number }
+        defocus: () => void
     } | null>(null)
 
+    const addNoteDraft = (client: { clientX: number; clientY: number }) => {
+        setIsClicking(false)
+        const corner = getOffset(document.getElementById('canvas'))
+        const float = document.getElementById('mainFloat')
+        const [marginx, marginy] = [
+            parseInt(float.style.marginLeft),
+            parseInt(float.style.marginTop),
+        ]
+        const offset = {
+            x: client.clientX - marginx - corner.left - 20,
+            y: client.clientY - marginy - corner.top - 10,
+        }
+        const saveDraft = (content: string) => {
+            setNotes((prevNotes) => [
+                ...prevNotes,
+                {
+                    content,
+                    charWidth: Math.round(content.length ** 0.7) + 2,
+                    offset,
+                },
+            ])
+            setNoteDraft(null)
+        }
+        const defocus = () => setNoteDraft(null)
+        setNoteDraft({ saveDraft, offset, defocus })
+    }
+
     const clickHandler: React.MouseEventHandler = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.type === 'mousemove') {
-            if (!isClicking) {
-                return
-            }
-            setPos({ x: pos.x + e.movementX, y: pos.y + e.movementY })
-        } else if (e.type === 'mousedown') {
-            setIsClicking(true)
-            setClickPos({ x: e.clientX, y: e.clientY })
-        } else if (e.type === 'mouseup') {
-            setIsClicking(false)
-            if ((e.clientX - clickPos.x) ** 2 + (e.clientY - clickPos.y) ** 2 > 64) {
-                return
-            }
-            const corner = getOffset(document.getElementById('canvas'))
-            const float = document.getElementById('mainFloat')
-            const [marginx, marginy] = [
-                parseInt(float.style.marginLeft),
-                parseInt(float.style.marginTop),
-            ]
-            const offset = {
-                x: e.clientX - marginx - corner.left - 20,
-                y: e.clientY - marginy - corner.top - 10,
-            }
-            const saveDraft = (content: string) => {
-                setNotes((prevNotes) => [
-                    ...prevNotes,
-                    {
-                        content,
-                        charWidth: Math.round(content.length ** 0.7) + 2,
-                        offset,
-                    },
-                ])
-                setNoteDraft(null)
-            }
-            setNoteDraft({ saveDraft, offset })
+        switch (e.type) {
+            case 'mousedown':
+                setIsClicking(true)
+                setClickPos({ x: e.clientX, y: e.clientY })
+                break
+            case 'mousemove':
+                if (!isClicking) {
+                    break
+                }
+                setPos({ x: pos.x + e.movementX, y: pos.y + e.movementY })
+                break
+            case 'mouseup':
+                if ((e.clientX - clickPos.x) ** 2 + (e.clientY - clickPos.y) ** 2 > 64) {
+                    setIsClicking(false)
+                    break
+                }
+                addNoteDraft(e)
+                break
+        }
+    }
+
+    const touchHandler: React.TouchEventHandler = (e: React.TouchEvent) => {
+        // Prevent Mouse events from running
+        if (e.type === 'touchend') e.preventDefault()
+
+        const touch = e.touches[0]
+        switch (e.type) {
+            case 'touchstart':
+                setIsClicking(true)
+                setClickPos({ x: touch.clientX, y: touch.clientY })
+                setLastTouch({ x: touch.clientX, y: touch.clientY })
+                break
+            case 'touchmove':
+                if (!isClicking) {
+                    break
+                }
+                setPos(({ x, y }) => ({
+                    x: x + touch.clientX - clickPos.x,
+                    y: y + touch.clientY - clickPos.y,
+                }))
+                setLastTouch({ x: touch.clientX, y: touch.clientY })
+                break
+            case 'touchend':
+                if ((lastTouch.x - clickPos.x) ** 2 + (lastTouch.y - clickPos.y) ** 2 > 64) {
+                    setIsClicking(false)
+                    break
+                }
+                addNoteDraft({ clientX: clickPos.x, clientY: clickPos.y })
+                break
         }
     }
 
     return (
-        <section className="row h-100 w-100 d-flex justify-content-center">
+        <section className="row d-flex justify-content-center">
             <div
                 onMouseDown={clickHandler}
                 onMouseUp={clickHandler}
                 onMouseMove={clickHandler}
                 onMouseLeave={() => setIsClicking(false)}
+                onTouchStart={touchHandler}
+                onTouchEnd={touchHandler}
+                onTouchMove={touchHandler}
+                onTouchCancel={() => setIsClicking(false)}
                 id="canvas"
-                className="position-absolute my-5 h-75 w-75 card border rounded shadow"
+                className="position-absolute min-vw-100 min-vh-100"
                 style={{ overflow: 'hidden' }}
             >
                 <Float offset={pos} id="mainFloat">
@@ -85,7 +137,10 @@ const Canvas = () => {
                     ))}
                     {noteDraft && (
                         <Float offset={noteDraft.offset}>
-                            <NoteDraft onSubmit={noteDraft.saveDraft} />
+                            <NoteDraft
+                                onSubmit={noteDraft.saveDraft}
+                                onDefocus={noteDraft.defocus}
+                            />
                         </Float>
                     )}
                     <Float offset={{ x: 200, y: 100 }}>
@@ -104,11 +159,11 @@ const Canvas = () => {
                     <Float offset={{ x: 600, y: -300 }}>Going up!</Float>
                 </Float>
             </div>
-            <div className="position-absolute">
+            <Float offset={{ x: 0, y: 15 }}>
                 <div className="btn btn-primary" onClick={() => setPos({ x: 0, y: 0 })}>
                     Reset
                 </div>
-            </div>
+            </Float>
         </section>
     )
 }
