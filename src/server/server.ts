@@ -1,14 +1,20 @@
 /** @format */
 
 import * as express from 'express'
-import * as path from 'path'
 import * as morgan from 'morgan'
+import * as cors from 'cors'
+import * as helmet from 'helmet'
+
+import * as path from 'path'
 
 import apiRouter from './routes'
 
 const app = express()
 
 app.use(morgan('dev'))
+app.use(cors())
+app.use(helmet())
+
 app.use(express.static('public'))
 app.use(apiRouter)
 
