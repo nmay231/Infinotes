@@ -2,50 +2,31 @@
 
 import * as React from 'react'
 
-import Float, { IFloatProps } from './Float'
+import Float from './Float'
 import Note from './Note'
 import NoteDraft from './NoteDraft'
 
-function getOffset(el: HTMLElement) {
-    var rect = el.getBoundingClientRect(),
-        scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-        scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    return { top: rect.top + scrollTop, left: rect.left + scrollLeft }
-}
-
 const Canvas = () => {
-    const [pos, setPos] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 })
+    const [pos, setPos] = React.useState<IPos>({ x: 0, y: 0 })
 
     const [clickPos, setClickPos] = React.useState({ x: 0, y: 0 })
     const [lastTouch, setLastTouch] = React.useState({ x: 0, y: 0 })
     const [isClicking, setIsClicking] = React.useState(false)
+    const [cancelClick, setCancelClick] = React.useState(false)
 
-    const [notes, setNotes] = React.useState<
-        {
-            content: string
-            charWidth: number
-            offset: { x: number; y: number }
-        }[]
-    >([{ content: 'test', charWidth: 5, offset: { x: 100, y: 500 } }])
+    const [notes, setNotes] = React.useState<(INote & { charWidth: number })[]>([
+        { content: 'test', charWidth: 5, offset: { x: 100, y: 500 } },
+    ])
 
     const [noteDraft, setNoteDraft] = React.useState<{
         saveDraft: (content: string) => void
         offset: { x: number; y: number }
         defocus: () => void
+        initialContent?: string
     } | null>(null)
 
-    const addNoteDraft = (client: { clientX: number; clientY: number }) => {
+    const addNoteDraft = (offset: IPos, initialContent: string = '') => {
         setIsClicking(false)
-        const corner = getOffset(document.getElementById('canvas'))
-        const float = document.getElementById('mainFloat')
-        const [marginx, marginy] = [
-            parseInt(float.style.marginLeft),
-            parseInt(float.style.marginTop),
-        ]
-        const offset = {
-            x: client.clientX - marginx - corner.left - 20,
-            y: client.clientY - marginy - corner.top - 10,
-        }
         const saveDraft = (content: string) => {
             setNotes((prevNotes) => [
                 ...prevNotes,
@@ -58,12 +39,15 @@ const Canvas = () => {
             setNoteDraft(null)
         }
         const defocus = () => setNoteDraft(null)
-        setNoteDraft({ saveDraft, offset, defocus })
+        setNoteDraft({ saveDraft, offset, defocus, initialContent })
     }
 
     const clickHandler: React.MouseEventHandler = (e: React.MouseEvent<HTMLDivElement>) => {
         switch (e.type) {
             case 'mousedown':
+                if (cancelClick) {
+                    setCancelClick(false)
+                }
                 setIsClicking(true)
                 setClickPos({ x: e.clientX, y: e.clientY })
                 break
@@ -78,7 +62,11 @@ const Canvas = () => {
                     setIsClicking(false)
                     break
                 }
-                addNoteDraft(e)
+                const float = document.getElementById('mainFloat')
+                addNoteDraft({
+                    x: e.clientX - parseInt(float.style.marginLeft) - 20,
+                    y: e.clientY - parseInt(float.style.marginTop) - 10,
+                })
                 break
         }
     }
@@ -90,17 +78,20 @@ const Canvas = () => {
         const touch = e.touches[0]
         switch (e.type) {
             case 'touchstart':
+                if (cancelClick) {
+                    setCancelClick(false)
+                }
                 setIsClicking(true)
-                setClickPos({ x: touch.clientX, y: touch.clientY })
-                setLastTouch({ x: touch.clientX, y: touch.clientY })
+                setClickPos({ x: touch.pageX, y: touch.pageY })
+                setLastTouch({ x: touch.pageX, y: touch.pageY })
                 break
             case 'touchmove':
                 if (!isClicking) {
                     break
                 }
                 setPos(({ x, y }) => ({
-                    x: x + touch.clientX - clickPos.x,
-                    y: y + touch.clientY - clickPos.y,
+                    x: x + (touch.clientX - lastTouch.x),
+                    y: y + (touch.clientY - lastTouch.y),
                 }))
                 setLastTouch({ x: touch.clientX, y: touch.clientY })
                 break
@@ -109,13 +100,17 @@ const Canvas = () => {
                     setIsClicking(false)
                     break
                 }
-                addNoteDraft({ clientX: clickPos.x, clientY: clickPos.y })
+                const float = document.getElementById('mainFloat')
+                addNoteDraft({
+                    x: clickPos.x - parseInt(float.style.marginLeft) - 20,
+                    y: clickPos.y - parseInt(float.style.marginTop) - 10,
+                })
                 break
         }
     }
 
     return (
-        <section className="row d-flex justify-content-center">
+        <section className="row d-flex justify-content-center min-vw-100 min-vh-100">
             <div
                 onMouseDown={clickHandler}
                 onMouseUp={clickHandler}
@@ -126,13 +121,15 @@ const Canvas = () => {
                 onTouchMove={touchHandler}
                 onTouchCancel={() => setIsClicking(false)}
                 id="canvas"
-                className="position-absolute min-vw-100 min-vh-100"
-                style={{ overflow: 'hidden' }}
+                className="position-absolute w-100 h-100"
+                style={{ overflow: 'hidden' }} // Apparently, this is necessary. Don't remove it
             >
                 <Float offset={pos} id="mainFloat">
                     {notes.map(({ content, charWidth, offset }, i) => (
                         <Float key={i} offset={offset}>
-                            <Note charWidth={charWidth}>{content}</Note>
+                            <Note charWidth={charWidth} addNoteDraft={addNoteDraft} offset={offset}>
+                                {content}
+                            </Note>
                         </Float>
                     ))}
                     {noteDraft && (
@@ -140,6 +137,7 @@ const Canvas = () => {
                             <NoteDraft
                                 onSubmit={noteDraft.saveDraft}
                                 onDefocus={noteDraft.defocus}
+                                initialContent={noteDraft.initialContent}
                             />
                         </Float>
                     )}

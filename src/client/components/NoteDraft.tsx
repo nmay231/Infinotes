@@ -5,10 +5,11 @@ import * as React from 'react'
 interface INoteDraftProps {
     onSubmit: (content: string) => void
     onDefocus?: () => void
+    initialContent?: string
 }
 
-const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus }) => {
-    const [content, setContent] = React.useState('')
+const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus, initialContent = '' }) => {
+    const [content, setContent] = React.useState(initialContent)
 
     const handleSubmit: React.FormEventHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -20,9 +21,11 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus }) => {
         setContent(e.target.value)
     }
 
-    const handleFocus: React.FocusEventHandler = (e: React.FocusEvent) => {
-        if (e.type === 'blur') {
+    const handleFocus: React.FocusEventHandler = (e: React.FocusEvent<HTMLInputElement>) => {
+        if (e.type === 'blur' && e.target.value === '') {
             onDefocus()
+        } else {
+            onSubmit(content)
         }
     }
 
@@ -31,7 +34,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus }) => {
     }, [onSubmit])
 
     return (
-        <div id="noteDraft" className="card p-2" style={{ width: '15rem' }}>
+        <div id="noteDraft" className="card p-2 d-flex flex-row" style={{ width: '15rem' }}>
             <form onSubmit={handleSubmit}>
                 <input
                     id="noteDraftInput"
@@ -42,6 +45,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus }) => {
                     onBlur={handleFocus}
                 />
             </form>
+            <button className="btn">&times;</button>
         </div>
     )
 }

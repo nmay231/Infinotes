@@ -3,7 +3,7 @@
 import * as React from 'react'
 
 export interface IFloatProps {
-    offset: { x: number; y: number }
+    offset: IPos
     id?: string
 }
 

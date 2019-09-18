@@ -9,5 +9,6 @@
         "types": ["node", "express"]
     },
     "include": ["src/server/**/*"],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules"],
+    "files": ["src/global.d.ts"]
 }
