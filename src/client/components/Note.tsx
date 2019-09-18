@@ -7,9 +7,10 @@ export interface INoteProps {
     charWidth: number
     addNoteDraft: (offset: IPos, initialContent: string) => void
     offset: IPos
+    removeMe: () => void
 }
 
-const Note: React.FC<INoteProps> = ({ charWidth, children, addNoteDraft, offset }) => {
+const Note: React.FC<INoteProps> = ({ charWidth, children, addNoteDraft, offset, removeMe }) => {
     const handleClick: React.MouseEventHandler = (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('test')
@@ -18,6 +19,7 @@ const Note: React.FC<INoteProps> = ({ charWidth, children, addNoteDraft, offset 
     const handleDblClick: React.MouseEventHandler = (e: React.MouseEvent) => {
         e.stopPropagation()
         addNoteDraft(offset, children)
+        removeMe()
     }
 
     const CancelBubbling: React.MouseEventHandler = (e: React.MouseEvent) => {

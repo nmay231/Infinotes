@@ -14,9 +14,10 @@ const Canvas = () => {
     const [isClicking, setIsClicking] = React.useState(false)
     const [cancelClick, setCancelClick] = React.useState(false)
 
-    const [notes, setNotes] = React.useState<(INote & { charWidth: number })[]>([
-        { content: 'test', charWidth: 5, offset: { x: 100, y: 500 } },
-    ])
+    const [notes, setNotes] = React.useState<{
+        [key: string]: INote & { charWidth: number; removeMe: () => void }
+    }>({})
+    const [nextNoteID, setNextNoteID] = React.useState(0)
 
     const [noteDraft, setNoteDraft] = React.useState<{
         saveDraft: (content: string) => void
@@ -28,14 +29,21 @@ const Canvas = () => {
     const addNoteDraft = (offset: IPos, initialContent: string = '') => {
         setIsClicking(false)
         const saveDraft = (content: string) => {
-            setNotes((prevNotes) => [
+            setNotes((prevNotes) => ({
                 ...prevNotes,
-                {
+                [nextNoteID]: {
                     content,
                     charWidth: Math.round(content.length ** 0.7) + 2,
                     offset,
+                    removeMe: () => {
+                        setNotes((prevNotes) => {
+                            delete prevNotes[nextNoteID]
+                            return prevNotes
+                        })
+                    },
                 },
-            ])
+            }))
+            setNextNoteID(nextNoteID + 1)
             setNoteDraft(null)
         }
         const defocus = () => setNoteDraft(null)
@@ -125,13 +133,21 @@ const Canvas = () => {
                 style={{ overflow: 'hidden' }} // Apparently, this is necessary. Don't remove it
             >
                 <Float offset={pos} id="mainFloat">
-                    {notes.map(({ content, charWidth, offset }, i) => (
-                        <Float key={i} offset={offset}>
-                            <Note charWidth={charWidth} addNoteDraft={addNoteDraft} offset={offset}>
-                                {content}
-                            </Note>
-                        </Float>
-                    ))}
+                    {Object.keys(notes).map((id) => {
+                        let { content, charWidth, offset, removeMe } = notes[id]
+                        return (
+                            <Float key={id} offset={offset}>
+                                <Note
+                                    charWidth={charWidth}
+                                    addNoteDraft={addNoteDraft}
+                                    offset={offset}
+                                    removeMe={removeMe}
+                                >
+                                    {content}
+                                </Note>
+                            </Float>
+                        )
+                    })}
                     {noteDraft && (
                         <Float offset={noteDraft.offset}>
                             <NoteDraft

@@ -21,12 +21,8 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus, initialCont
         setContent(e.target.value)
     }
 
-    const handleFocus: React.FocusEventHandler = (e: React.FocusEvent<HTMLInputElement>) => {
-        if (e.type === 'blur' && e.target.value === '') {
-            onDefocus()
-        } else {
-            onSubmit(content)
-        }
+    const CancelBubbling: React.MouseEventHandler = (e: React.MouseEvent) => {
+        e.stopPropagation()
     }
 
     React.useEffect(() => {
@@ -34,18 +30,32 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus, initialCont
     }, [onSubmit])
 
     return (
-        <div id="noteDraft" className="card p-2 d-flex flex-row" style={{ width: '15rem' }}>
+        <div
+            id="noteDraft"
+            className="card p-2 d-flex flex-row"
+            style={{ width: '20rem' }}
+            onMouseDown={CancelBubbling}
+            onMouseUp={CancelBubbling}
+        >
             <form onSubmit={handleSubmit}>
                 <input
                     id="noteDraftInput"
                     type="text"
-                    className="form-control mb-n3"
+                    className="form-control ml-auto mb-n3"
                     value={content}
                     onChange={handleChange}
-                    onBlur={handleFocus}
                 />
             </form>
-            <button className="btn">&times;</button>
+            <button
+                role="submit"
+                className="btn btn-success ml-2"
+                onClick={() => onSubmit(content)}
+            >
+                ✓
+            </button>
+            <button role="button" className="btn btn-danger ml-2" onClick={onDefocus}>
+                &times;
+            </button>
         </div>
     )
 }
