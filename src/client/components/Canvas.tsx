@@ -15,7 +15,7 @@ const Canvas = () => {
     const [cancelClick, setCancelClick] = React.useState(false)
 
     const [notes, setNotes] = React.useState<{
-        [key: string]: INote & { charWidth: number; removeMe: () => void }
+        [key: string]: INote & { removeMe: () => void }
     }>({})
     const [nextNoteID, setNextNoteID] = React.useState(0)
 
@@ -29,20 +29,21 @@ const Canvas = () => {
     const addNoteDraft = (offset: IPos, initialContent: string = '') => {
         setIsClicking(false)
         const saveDraft = (content: string) => {
-            setNotes((prevNotes) => ({
-                ...prevNotes,
-                [nextNoteID]: {
-                    content,
-                    charWidth: Math.round(content.length ** 0.7) + 2,
-                    offset,
-                    removeMe: () => {
-                        setNotes((prevNotes) => {
-                            delete prevNotes[nextNoteID]
-                            return prevNotes
-                        })
+            if (content.length) {
+                setNotes((prevNotes) => ({
+                    ...prevNotes,
+                    [nextNoteID]: {
+                        content,
+                        offset,
+                        removeMe: () => {
+                            setNotes((prevNotes) => {
+                                delete prevNotes[nextNoteID]
+                                return prevNotes
+                            })
+                        },
                     },
-                },
-            }))
+                }))
+            }
             setNextNoteID(nextNoteID + 1)
             setNoteDraft(null)
         }
@@ -134,11 +135,10 @@ const Canvas = () => {
             >
                 <Float offset={pos} id="mainFloat">
                     {Object.keys(notes).map((id) => {
-                        let { content, charWidth, offset, removeMe } = notes[id]
+                        let { content, offset, removeMe } = notes[id]
                         return (
                             <Float key={id} offset={offset}>
                                 <Note
-                                    charWidth={charWidth}
                                     addNoteDraft={addNoteDraft}
                                     offset={offset}
                                     removeMe={removeMe}
