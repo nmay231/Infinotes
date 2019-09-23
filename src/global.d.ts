@@ -10,8 +10,11 @@ declare interface IPos {
 }
 
 declare interface INote {
+    id?: number
     content: string
     offset: IPos
+    username: string
+    userid: number
 }
 
 // Auth
@@ -28,4 +31,19 @@ declare interface IToken {
     lastName: string
     role: 'guest' | 'user' | 'admin'
     token: string
+}
+
+declare interface IUser {
+    id: number
+    username: string
+    role: 'guest' | 'user' | 'admin'
+    hash: string
+    firstName: string
+    lastName: string
+    numberOfNotes: number
+    _created: Date
+}
+
+declare namespace Express {
+    interface User extends IUser {}
 }

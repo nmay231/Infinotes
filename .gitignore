@@ -1,6 +1,11 @@
+# Production
 node_modules/
 dist/
 public/js/app.js
 
+# Configs
 config/*
 !config/.env.example
+
+# Error logs
+*-error.log

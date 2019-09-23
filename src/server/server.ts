@@ -8,6 +8,7 @@ import * as helmet from 'helmet'
 import * as path from 'path'
 
 import apiRouter from './routes'
+import './middlewares'
 
 const app = express()
 
