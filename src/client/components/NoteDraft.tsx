@@ -1,19 +1,32 @@
 /** @format */
 
 import * as React from 'react'
+import Float from './Float'
+import { useNotes, useNoteDraft } from '../utils/useNotes'
+import { NoteDraftContext } from './context/NoteDraftContext'
 
 interface INoteDraftProps {
-    onSubmit: (content: string) => void
-    onDefocus?: () => void
-    initialContent?: string
+    offset: IPos
 }
 
-const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus, initialContent = '' }) => {
-    const [content, setContent] = React.useState(initialContent)
+const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
+    const { addNote } = useNotes()
+    const [draft, setDraft] = React.useContext(NoteDraftContext)
+
+    if (!draft) {
+        return <></>
+    }
+
+    const [content, setContent] = React.useState(draft.initialContent)
 
     const handleSubmit: React.FormEventHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        onSubmit(content)
+
+        if (!content.length) {
+            return setDraft(null)
+        }
+        addNote({ offset, content })
+        setDraft(null)
     }
 
     const handleChange: React.ChangeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,42 +34,50 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ onSubmit, onDefocus, initialCont
         setContent(e.target.value)
     }
 
-    const CancelBubbling: React.MouseEventHandler = (e: React.MouseEvent) => {
+    const cancelMouseBubbling: React.MouseEventHandler = (e: React.MouseEvent) => {
+        e.stopPropagation()
+    }
+
+    const cancelTouchBubbling: React.TouchEventHandler = (e: React.TouchEvent) => {
         e.stopPropagation()
     }
 
     React.useEffect(() => {
         document.getElementById('noteDraftInput').focus()
-    }, [onSubmit])
+    }, [offset])
 
     return (
-        <div
-            id="noteDraft"
-            className="card p-2 d-flex flex-row"
-            style={{ width: '20rem' }}
-            onMouseDown={CancelBubbling}
-            onMouseUp={CancelBubbling}
-        >
-            <form onSubmit={handleSubmit}>
-                <input
-                    id="noteDraftInput"
-                    type="text"
-                    className="form-control ml-auto mb-n3"
-                    value={content}
-                    onChange={handleChange}
-                />
-            </form>
-            <button
-                role="submit"
-                className="btn btn-success ml-2"
-                onClick={() => onSubmit(content)}
+        <Float offset={offset}>
+            <div
+                id="noteDraft"
+                className="card p-2 d-flex flex-row"
+                style={{ width: '20rem' }}
+                onMouseDown={cancelMouseBubbling}
+                onMouseUp={cancelMouseBubbling}
+                onTouchStart={cancelTouchBubbling}
+                onTouchEnd={cancelTouchBubbling}
             >
-                ✓
-            </button>
-            <button role="button" className="btn btn-danger ml-2" onClick={onDefocus}>
-                &times;
-            </button>
-        </div>
+                <form onSubmit={handleSubmit}>
+                    <input
+                        id="noteDraftInput"
+                        type="text"
+                        className="form-control ml-auto mb-n3"
+                        value={content}
+                        onChange={handleChange}
+                    />
+                </form>
+                <button className="btn btn-success ml-2" onClick={handleSubmit}>
+                    ✓
+                </button>
+                <button
+                    role="button"
+                    className="btn btn-danger ml-2"
+                    onClick={() => setDraft(null)}
+                >
+                    &times;
+                </button>
+            </div>
+        </Float>
     )
 }
 

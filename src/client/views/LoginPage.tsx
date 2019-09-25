@@ -6,6 +6,7 @@ import FormField from '../components/commons/FormField'
 import FormButton from '../components/commons/FormButton'
 import { RouteComponentProps, withRouter } from 'react-router'
 import useLogin from '../utils/useLogin'
+import { Link } from 'react-router-dom'
 
 interface ILoginPageProps extends RouteComponentProps {}
 
@@ -90,6 +91,11 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
                         <FormButton click={() => history.push('/')} type="secondary">
                             Cancel
                         </FormButton>
+                    </div>
+                    <div className="text-center mt-4 mb-2">
+                        <Link to={isRegister ? '/login' : '/register'}>
+                            Or go to {isRegister ? 'Login' : 'Registration'}
+                        </Link>
                     </div>
                 </form>
             </div>

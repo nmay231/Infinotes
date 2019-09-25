@@ -5,8 +5,18 @@ import * as React from 'react'
 import Float from './Float'
 import Note from './Note'
 import NoteDraft from './NoteDraft'
+import useLogin from '../utils/useLogin'
+import { useNotes, useNoteDraft } from '../utils/useNotes'
+import { NoteDraftContext } from './context/NoteDraftContext'
+import { RouteComponentProps, withRouter } from 'react-router'
 
-const Canvas = () => {
+interface ICanvasProps extends RouteComponentProps {}
+
+const Canvas: React.FC<ICanvasProps> = ({ history }) => {
+    const { isLoggedIn } = useLogin()
+    const { notes } = useNotes()
+    const [draft, setDraft] = React.useContext(NoteDraftContext)
+
     const [pos, setPos] = React.useState<IPos>({ x: 0, y: 0 })
 
     const [clickPos, setClickPos] = React.useState({ x: 0, y: 0 })
@@ -14,41 +24,11 @@ const Canvas = () => {
     const [isClicking, setIsClicking] = React.useState(false)
     const [cancelClick, setCancelClick] = React.useState(false)
 
-    const [notes, setNotes] = React.useState<{
-        [key: string]: INote & { removeMe: () => void }
-    }>({})
-    const [nextNoteID, setNextNoteID] = React.useState(0)
-
-    const [noteDraft, setNoteDraft] = React.useState<{
-        saveDraft: (content: string) => void
-        offset: { x: number; y: number }
-        defocus: () => void
-        initialContent?: string
-    } | null>(null)
-
-    const addNoteDraft = (offset: IPos, initialContent: string = '') => {
-        setIsClicking(false)
-        const saveDraft = (content: string) => {
-            if (content.length) {
-                setNotes((prevNotes) => ({
-                    ...prevNotes,
-                    [nextNoteID]: {
-                        content,
-                        offset,
-                        removeMe: () => {
-                            setNotes((prevNotes) => {
-                                delete prevNotes[nextNoteID]
-                                return prevNotes
-                            })
-                        },
-                    },
-                }))
-            }
-            setNextNoteID(nextNoteID + 1)
-            setNoteDraft(null)
+    const createDraft = (draft: { offset: IPos; initialContent: string }) => {
+        if (!isLoggedIn) {
+            history.push('/login')
         }
-        const defocus = () => setNoteDraft(null)
-        setNoteDraft({ saveDraft, offset, defocus, initialContent })
+        setDraft(draft)
     }
 
     const clickHandler: React.MouseEventHandler = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -67,14 +47,18 @@ const Canvas = () => {
                 setPos({ x: pos.x + e.movementX, y: pos.y + e.movementY })
                 break
             case 'mouseup':
+                setIsClicking(false)
+
                 if ((e.clientX - clickPos.x) ** 2 + (e.clientY - clickPos.y) ** 2 > 64) {
-                    setIsClicking(false)
                     break
                 }
                 const float = document.getElementById('mainFloat')
-                addNoteDraft({
-                    x: e.clientX - parseInt(float.style.marginLeft) - 20,
-                    y: e.clientY - parseInt(float.style.marginTop) - 10,
+                createDraft({
+                    offset: {
+                        x: e.clientX - parseInt(float.style.marginLeft) - 20,
+                        y: e.clientY - parseInt(float.style.marginTop) - 10,
+                    },
+                    initialContent: '',
                 })
                 break
         }
@@ -110,16 +94,19 @@ const Canvas = () => {
                     break
                 }
                 const float = document.getElementById('mainFloat')
-                addNoteDraft({
-                    x: clickPos.x - parseInt(float.style.marginLeft) - 20,
-                    y: clickPos.y - parseInt(float.style.marginTop) - 10,
+                createDraft({
+                    offset: {
+                        x: clickPos.x - parseInt(float.style.marginLeft) - 20,
+                        y: clickPos.y - parseInt(float.style.marginTop) - 10,
+                    },
+                    initialContent: '',
                 })
                 break
         }
     }
 
     return (
-        <section className="row d-flex justify-content-center min-vw-100 min-vh-100">
+        <>
             <div
                 onMouseDown={clickHandler}
                 onMouseUp={clickHandler}
@@ -134,29 +121,15 @@ const Canvas = () => {
                 style={{ overflow: 'hidden' }} // Apparently, this is necessary. Don't remove it
             >
                 <Float offset={pos} id="mainFloat">
-                    {Object.keys(notes).map((id) => {
-                        let { content, offset, removeMe } = notes[id]
+                    {notes.map((note) => {
+                        let { content, id } = note
                         return (
-                            <Float key={id} offset={offset}>
-                                <Note
-                                    addNoteDraft={addNoteDraft}
-                                    offset={offset}
-                                    removeMe={removeMe}
-                                >
-                                    {content}
-                                </Note>
-                            </Float>
+                            <Note key={id} id={id} {...note}>
+                                {content}
+                            </Note>
                         )
                     })}
-                    {noteDraft && (
-                        <Float offset={noteDraft.offset}>
-                            <NoteDraft
-                                onSubmit={noteDraft.saveDraft}
-                                onDefocus={noteDraft.defocus}
-                                initialContent={noteDraft.initialContent}
-                            />
-                        </Float>
-                    )}
+                    {draft && <NoteDraft {...draft} />}
                     <Float offset={{ x: 200, y: 100 }}>
                         <div
                             className="border border-danger d-flex flex-column justify-content-center align-items-center"
@@ -178,8 +151,8 @@ const Canvas = () => {
                     Reset
                 </div>
             </Float>
-        </section>
+        </>
     )
 }
 
-export default Canvas
+export default withRouter(Canvas)

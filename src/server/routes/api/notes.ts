@@ -11,14 +11,17 @@ router.use(BearerStrategy())
 router.get('/:id?', async (req, res) => {
     let id = req.params.id
     try {
+        let query = knextion('Notes').select()
+        let result = await (id ? query.where({ id }) : query)
+        result = result.map((note) => {
+            note.offset = { x: note.posx, y: note.posy }
+            delete note.posx, note.posy
+            return note
+        })
         if (id) {
-            res.status(200).json(
-                (await knextion('Notes')
-                    .where({ id })
-                    .select())[0],
-            )
+            res.status(200).json(result[0])
         } else {
-            res.status(200).json(await knextion('Notes').select())
+            res.status(200).json(result)
         }
     } catch (err) {
         console.error(err)

@@ -5,6 +5,7 @@ import Axios from 'axios'
 import { Method } from 'axios'
 
 export const NOTES_API = '/api/notes'
+export const USERS_API = '/api/users'
 
 export const LOGIN_ENDPOINT = '/auth/login'
 export const REGISTER_ENDPOINT = '/auth/register'
