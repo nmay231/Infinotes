@@ -4,6 +4,7 @@ import * as React from 'react'
 import Float from './Float'
 import { useNotes } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
+import useTouch from '../utils/useTouch'
 
 export interface INoteProps {
     id: number
@@ -14,6 +15,17 @@ export interface INoteProps {
 }
 
 const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) => {
+    const { events } = useTouch(({ event, skip, pause, resume }) => {
+        console.log('Note intervention!', event.type, event.origin)
+        // skip(1)
+        pause()
+        new Promise((resolve) =>
+            setTimeout(() => {
+                resume()
+                resolve()
+            }, 3000),
+        )
+    })
     const { removeNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -46,12 +58,13 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) 
             <div
                 className="card p-2 no-select text-center"
                 style={{ width: charWidth * 10 }}
-                onClick={handleClick}
-                onDoubleClick={handleDblClick}
-                onMouseDown={cancelMouseBubbling}
-                onMouseUp={cancelMouseBubbling}
-                onTouchStart={cancelTouchBubbling}
-                onTouchEnd={cancelTouchBubbling}
+                // onClick={handleClick}
+                // onDoubleClick={handleDblClick}
+                // onMouseDown={cancelMouseBubbling}
+                // onMouseUp={cancelMouseBubbling}
+                // onTouchStart={cancelTouchBubbling}
+                // onTouchEnd={cancelTouchBubbling}
+                {...events}
             >
                 {children}
                 <footer className="blockquote-footer">{username}</footer>

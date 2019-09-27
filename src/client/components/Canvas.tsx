@@ -9,10 +9,14 @@ import useLogin from '../utils/useLogin'
 import { useNotes, useNoteDraft } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
 import { RouteComponentProps, withRouter } from 'react-router'
+import useTouch from '../utils/useTouch'
 
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
+    const { events } = useTouch(({ event }) =>
+        console.log(`canvas event: ${event.type}, origin: ${event.origin}`),
+    )
     const { isLoggedIn } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
@@ -108,14 +112,15 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     return (
         <>
             <div
-                onMouseDown={clickHandler}
-                onMouseUp={clickHandler}
-                onMouseMove={clickHandler}
-                onMouseLeave={() => setIsClicking(false)}
-                onTouchStart={touchHandler}
-                onTouchEnd={touchHandler}
-                onTouchMove={touchHandler}
-                onTouchCancel={() => setIsClicking(false)}
+                // onMouseDown={clickHandler}
+                // onMouseUp={clickHandler}
+                // onMouseMove={clickHandler}
+                // onMouseLeave={() => setIsClicking(false)}
+                // onTouchStart={touchHandler}
+                // onTouchEnd={touchHandler}
+                // onTouchMove={touchHandler}
+                // onTouchCancel={() => setIsClicking(false)}
+                {...events}
                 id="canvas"
                 className="position-absolute w-100 h-100"
                 style={{ overflow: 'hidden' }} // Apparently, this is necessary. Don't remove it
