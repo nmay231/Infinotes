@@ -15,16 +15,9 @@ export interface INoteProps {
 }
 
 const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) => {
-    const { events } = useTouch(({ event, skip, pause, resume }) => {
+    const { events } = useTouch(({ event, skip }) => {
         console.log('Note intervention!', event.type, event.origin)
-        // skip(1)
-        pause()
-        new Promise((resolve) =>
-            setTimeout(() => {
-                resume()
-                resolve()
-            }, 3000),
-        )
+        skip(1)
     })
     const { removeNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)

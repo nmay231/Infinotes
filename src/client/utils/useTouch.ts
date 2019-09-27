@@ -14,6 +14,13 @@ interface MouseTouchEvent {
     durationms?: number
 }
 
+type HandlerArgs = {
+    event: MouseTouchEvent
+    skip: (times: number) => void
+}
+
+type HandlerFunc = (args: HandlerArgs) => void
+
 // This keeps track of which components got triggered during a mouse/touch event
 // It only keeps track of two touches on mobile devices
 let eventStacks: { [key: string]: number[] } = {
@@ -55,35 +62,12 @@ let bubbleSkips: { [key: string]: number } = {}
 const skip = (times: number = NaN, origin: OriginType, event: EventType) => {
     bubbleSkips[origin + event] = times
 }
-type HandlerArgs = {
-    event: MouseTouchEvent
-    skip: (times: number) => void
-    passOn: (event: MouseTouchEvent) => void
-}
 
-type HandlerFunc = (args: HandlerArgs) => void
-
-const passEvent = (event: MouseTouchEvent, afterHandlerId: number) => {
-    let index = eventStacks[event.origin].indexOf(afterHandlerId)
-    if (index === -1) {
-        return
-    }
-    while (index-- > 0) {
-        // die in hell
-    }
-}
-
-const callHandler = (
-    handler: (args: HandlerArgs) => void,
-    event: MouseTouchEvent,
-    handlerId: number,
-): void => {
-    console.log('callHandler', event, handlerId)
+const callHandler = (handler: HandlerFunc, event: MouseTouchEvent, handlerId: number): void => {
     if (true) {
         handler({
             event,
             skip: (times) => skip(times, event.origin, event.type),
-            passOn: (event) => {},
         })
     }
     if (event.type === 'end') {
@@ -91,7 +75,7 @@ const callHandler = (
     }
 }
 
-const useTouch = (handler: (args: HandlerArgs) => void) => {
+const useTouch = (handler: HandlerFunc) => {
     const [id] = React.useState(nextId++)
     const [isPressed, setIsPressed] = React.useState(false)
     const [isHold, setIsHold] = React.useState(false)
