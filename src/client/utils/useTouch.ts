@@ -8,9 +8,10 @@ type EventType = 'tap' | 'double' | 'hold' | 'start' | 'move' | 'end'
 interface MouseTouchEvent {
     type: EventType
     origin: OriginType
-    moveChange?: IPos
-    startPos?: IPos // HERE: not optional
+    startPos: IPos
     endPos?: IPos
+    isHeld: boolean
+    moveChange?: IPos
     durationms?: number
 }
 
@@ -19,7 +20,7 @@ type HandlerArgs = {
     skip: (times: number) => void
 }
 
-type HandlerFunc = (args: HandlerArgs) => void
+export type HandlerFunc = (args: HandlerArgs) => void
 
 // This keeps track of which components got triggered during a mouse/touch event
 // It only keeps track of two touches on mobile devices
@@ -78,9 +79,12 @@ const callHandler = (handler: HandlerFunc, event: MouseTouchEvent, handlerId: nu
 const useTouch = (handler: HandlerFunc) => {
     const [id] = React.useState(nextId++)
     const [isPressed, setIsPressed] = React.useState(false)
-    const [isHold, setIsHold] = React.useState(false)
     const [startTime, setStartTime] = React.useState(NaN)
     const [prevTime, setPrevTime] = React.useState(NaN)
+
+    const [isHeld, setIsHeld] = React.useState(false)
+    const [startPos, setStartPos] = React.useState<IPos>(null)
+    const [prevPos, setPrevPos] = React.useState<IPos>(null)
 
     //start, end, move, cancel
     const onTouchStartCapture = (e: React.TouchEvent) => {
@@ -89,21 +93,36 @@ const useTouch = (handler: HandlerFunc) => {
 
     const onTouchStart = (e: React.TouchEvent) => {
         const { origin } = getTouchStackAndOrigin(e)
-        callHandler(handler, { origin, type: 'start' }, id)
+
+        const touch = e.changedTouches[0]
+        setStartPos((prev) => {
+            callHandler(handler, { isHeld, startPos, origin, type: 'start' }, id)
+            return { x: touch.clientX, y: touch.clientY }
+        })
+        setPrevPos({ x: touch.clientX, y: touch.clientY })
+        setIsHeld(true)
+
         if (!startTime) {
             setStartTime(Date.now())
         } // HERE: what happens with two fingers?
         if (origin === 'touch2') {
-            setIsHold(false)
+            setIsHeld(false)
         }
     }
 
     const onTouchMove = (e: React.TouchEvent) => {
         const { stack, origin } = getTouchStackAndOrigin(e)
         if (stack.length) {
-            callHandler(handler, { origin, type: 'move' }, id)
-            if (Date.now() - startTime > 1500) {
-                callHandler(handler, { origin, type: 'hold' }, id)
+            const touch = e.changedTouches[0]
+            const moveChange: IPos = {
+                x: touch.clientX - prevPos.x || 0,
+                y: touch.clientY - prevPos.y || 0,
+            }
+            callHandler(handler, { isHeld, moveChange, startPos, origin, type: 'move' }, id)
+            if (moveChange.x ** 2 + moveChange.y ** 2 > 25) {
+                setIsHeld(false)
+            } else if (Date.now() - startTime > 1500 && isHeld) {
+                callHandler(handler, { isHeld, startPos, origin, type: 'hold' }, id)
             }
         }
     }
@@ -111,14 +130,16 @@ const useTouch = (handler: HandlerFunc) => {
     const onTouchEnd = (e: React.TouchEvent) => {
         const { origin } = getTouchStackAndOrigin(e)
         if (startTime - prevTime < 800) {
-            callHandler(handler, { origin, type: 'double' }, id)
+            callHandler(handler, { isHeld, startPos, origin, type: 'double' }, id)
         } else if (Date.now() - startTime < 600) {
-            callHandler(handler, { origin, type: 'tap' }, id)
+            callHandler(handler, { isHeld, startPos, origin, type: 'tap' }, id)
         }
-        callHandler(handler, { origin, type: 'end' }, id)
-        setIsHold(false)
+        callHandler(handler, { isHeld, startPos, origin, type: 'end' }, id)
+        setIsHeld(false)
         setStartTime(NaN)
         setPrevTime(Date.now())
+        setStartPos(null)
+        setPrevPos(null)
     }
 
     const onMouseDownCapture = (e: React.MouseEvent) => {
@@ -130,8 +151,18 @@ const useTouch = (handler: HandlerFunc) => {
             return
         }
         setIsPressed(true)
-        callHandler(handler, { origin: 'mouse', type: 'start' }, id)
         setStartTime(Date.now())
+        const newStartPos: IPos = {
+            x: e.clientX,
+            y: e.clientY,
+        }
+        setStartPos(newStartPos)
+        setIsHeld(true)
+        callHandler(
+            handler,
+            { isHeld: true, startPos: newStartPos, origin: 'mouse', type: 'start' },
+            id,
+        )
     }
 
     const onMouseMove = (e: React.MouseEvent) => {
@@ -139,7 +170,15 @@ const useTouch = (handler: HandlerFunc) => {
             return
         }
         if (isPressed) {
-            callHandler(handler, { origin: 'mouse', type: 'move' }, id)
+            const moveChange: IPos = {
+                x: e.movementX,
+                y: e.movementY,
+            }
+            callHandler(
+                handler,
+                { isHeld, moveChange, startPos, origin: 'mouse', type: 'move' },
+                id,
+            )
         }
     }
 
@@ -148,15 +187,17 @@ const useTouch = (handler: HandlerFunc) => {
             return
         }
         if (startTime - prevTime < 800) {
-            callHandler(handler, { origin: 'mouse', type: 'double' }, id)
+            callHandler(handler, { isHeld, startPos, origin: 'mouse', type: 'double' }, id)
         } else if (Date.now() - startTime < 600) {
-            callHandler(handler, { origin: 'mouse', type: 'tap' }, id)
+            callHandler(handler, { isHeld, startPos, origin: 'mouse', type: 'tap' }, id)
         }
-        callHandler(handler, { origin: 'mouse', type: 'end' }, id)
+        callHandler(handler, { isHeld, startPos, origin: 'mouse', type: 'end' }, id)
         setIsPressed(false)
-        setIsHold(false)
+        setIsHeld(false)
         setStartTime(NaN)
         setPrevTime(Date.now())
+        setStartPos(null)
+        setPrevPos(null)
     }
 
     return {
