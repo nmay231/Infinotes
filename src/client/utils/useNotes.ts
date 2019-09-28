@@ -12,7 +12,7 @@ export const useNotes = () => {
 
     const [notes, setNotes] = React.useContext(NotesContext)
 
-    const fetchNotes = async () => {
+    const fetchNotes = async (from: IPos = { x: 0, y: 0 }) => {
         try {
             let rawNotes = await json<INote[]>(NOTES_API)
             rawNotes = await Promise.all<INote>(
@@ -48,12 +48,20 @@ export const useNotes = () => {
 
     const notesBy = (userid: number) => {}
 
+    const isEditable = (noteId: number) => {
+        return (
+            user.role === 'admin' ||
+            notes.filter((note) => note.id === noteId)[0].userid === user.userid
+        )
+    }
+
     return {
         notes,
         fetchNotes,
         addNote,
         removeNote,
         notesBy,
+        isEditable,
     }
 }
 

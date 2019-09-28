@@ -4,12 +4,20 @@ import * as React from 'react'
 import Float from './Float'
 import { useNotes, useNoteDraft } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
+import useTouch, { HandlerFunc } from '../utils/useTouch'
 
 interface INoteDraftProps {
     offset: IPos
 }
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
+    const pressHandler: HandlerFunc = ({ event }) => {
+        if (event.type === 'tap' && event.isStationary) {
+            return 1
+        }
+    }
+
+    const { events } = useTouch(pressHandler)
     const { addNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -34,14 +42,6 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
         setContent(e.target.value)
     }
 
-    const cancelMouseBubbling: React.MouseEventHandler = (e: React.MouseEvent) => {
-        e.stopPropagation()
-    }
-
-    const cancelTouchBubbling: React.TouchEventHandler = (e: React.TouchEvent) => {
-        e.stopPropagation()
-    }
-
     React.useEffect(() => {
         document.getElementById('noteDraftInput').focus()
     }, [offset])
@@ -52,10 +52,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
                 id="noteDraft"
                 className="card p-2 d-flex flex-row"
                 style={{ width: '20rem' }}
-                onMouseDown={cancelMouseBubbling}
-                onMouseUp={cancelMouseBubbling}
-                onTouchStart={cancelTouchBubbling}
-                onTouchEnd={cancelTouchBubbling}
+                {...events}
             >
                 <form onSubmit={handleSubmit}>
                     <input

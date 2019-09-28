@@ -9,14 +9,30 @@ import useLogin from '../utils/useLogin'
 import { useNotes, useNoteDraft } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
 import { RouteComponentProps, withRouter } from 'react-router'
-import useTouch from '../utils/useTouch'
+import useTouch, { HandlerFunc } from '../utils/useTouch'
 
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
-    const { events } = useTouch(({ event }) =>
-        console.log(`canvas event: ${event.type}, origin: ${event.origin}`),
-    )
+    const pressHandler: HandlerFunc = ({ event }) => {
+        if (event.type === 'tap' && event.isStationary) {
+            const float = document.getElementById('mainFloat')
+            createDraft({
+                offset: {
+                    x: event.startPos.x - parseInt(float.style.marginLeft),
+                    y: event.startPos.y - parseInt(float.style.marginTop),
+                },
+                initialContent: '',
+            })
+        } else if (event.type === 'move') {
+            setPos((pos) => ({
+                x: pos.x + event.moveChange.x,
+                y: pos.y + event.moveChange.y,
+            }))
+        }
+    }
+
+    const { events } = useTouch(pressHandler)
     const { isLoggedIn } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
@@ -35,43 +51,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         setDraft(draft)
     }
 
-    const clickHandler: React.MouseEventHandler = (e: React.MouseEvent<HTMLDivElement>) => {
-        switch (e.type) {
-            case 'mousedown':
-                if (cancelClick) {
-                    setCancelClick(false)
-                }
-                setIsClicking(true)
-                setClickPos({ x: e.clientX, y: e.clientY })
-                break
-            case 'mousemove':
-                if (!isClicking) {
-                    break
-                }
-                setPos({ x: pos.x + e.movementX, y: pos.y + e.movementY })
-                break
-            case 'mouseup':
-                setIsClicking(false)
-
-                if ((e.clientX - clickPos.x) ** 2 + (e.clientY - clickPos.y) ** 2 > 64) {
-                    break
-                }
-                const float = document.getElementById('mainFloat')
-                createDraft({
-                    offset: {
-                        x: e.clientX - parseInt(float.style.marginLeft) - 20,
-                        y: e.clientY - parseInt(float.style.marginTop) - 10,
-                    },
-                    initialContent: '',
-                })
-                break
-        }
-    }
-
     const touchHandler: React.TouchEventHandler = (e: React.TouchEvent) => {
-        // Prevent Mouse events from running
-        if (e.type === 'touchend') e.preventDefault()
-
         const touch = e.touches[0]
         switch (e.type) {
             case 'touchstart':
@@ -112,10 +92,6 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     return (
         <>
             <div
-                // onMouseDown={clickHandler}
-                // onMouseUp={clickHandler}
-                // onMouseMove={clickHandler}
-                // onMouseLeave={() => setIsClicking(false)}
                 // onTouchStart={touchHandler}
                 // onTouchEnd={touchHandler}
                 // onTouchMove={touchHandler}
