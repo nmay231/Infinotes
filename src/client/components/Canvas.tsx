@@ -33,73 +33,42 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     }
 
     const { events } = useTouch(pressHandler)
-    const { isLoggedIn } = useLogin()
+    const { isLoggedIn, logout, wasUser } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
     const [pos, setPos] = React.useState<IPos>({ x: 0, y: 0 })
 
-    const [clickPos, setClickPos] = React.useState({ x: 0, y: 0 })
-    const [lastTouch, setLastTouch] = React.useState({ x: 0, y: 0 })
-    const [isClicking, setIsClicking] = React.useState(false)
-    const [cancelClick, setCancelClick] = React.useState(false)
-
     const createDraft = (draft: { offset: IPos; initialContent: string }) => {
         if (!isLoggedIn) {
-            history.push('/login')
+            return history.push('/login')
         }
         setDraft(draft)
     }
 
-    const touchHandler: React.TouchEventHandler = (e: React.TouchEvent) => {
-        const touch = e.touches[0]
-        switch (e.type) {
-            case 'touchstart':
-                if (cancelClick) {
-                    setCancelClick(false)
-                }
-                setIsClicking(true)
-                setClickPos({ x: touch.pageX, y: touch.pageY })
-                setLastTouch({ x: touch.pageX, y: touch.pageY })
-                break
-            case 'touchmove':
-                if (!isClicking) {
-                    break
-                }
-                setPos(({ x, y }) => ({
-                    x: x + (touch.clientX - lastTouch.x),
-                    y: y + (touch.clientY - lastTouch.y),
-                }))
-                setLastTouch({ x: touch.clientX, y: touch.clientY })
-                break
-            case 'touchend':
-                if ((lastTouch.x - clickPos.x) ** 2 + (lastTouch.y - clickPos.y) ** 2 > 64) {
-                    setIsClicking(false)
-                    break
-                }
-                const float = document.getElementById('mainFloat')
-                createDraft({
-                    offset: {
-                        x: clickPos.x - parseInt(float.style.marginLeft) - 20,
-                        y: clickPos.y - parseInt(float.style.marginTop) - 10,
-                    },
-                    initialContent: '',
-                })
-                break
+    React.useEffect(() => {
+        if (!localStorage.getItem('fullscreen')) {
+            // I'll figure out how to detect if you're on a mobile device later
+            alert("If you're on a mobile device, toggle fullscreen for a better experience")
+            localStorage.setItem('fullscreen', 'fullscreen')
+        }
+    }, [])
+
+    const handleFullscreen = (e: React.MouseEvent) => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen()
+        } else {
+            document.exitFullscreen()
         }
     }
 
     return (
         <>
             <div
-                // onTouchStart={touchHandler}
-                // onTouchEnd={touchHandler}
-                // onTouchMove={touchHandler}
-                // onTouchCancel={() => setIsClicking(false)}
                 {...events}
                 id="canvas"
                 className="position-absolute w-100 h-100"
-                style={{ overflow: 'hidden' }} // Apparently, this is necessary. Don't remove it
+                style={{ overflow: 'hidden', background: 'white' }}
             >
                 <Float offset={pos} id="mainFloat">
                     {notes.map((note) => {
@@ -113,23 +82,40 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                     {draft && <NoteDraft {...draft} />}
                     <Float offset={{ x: 200, y: 100 }}>
                         <div
-                            className="border border-danger d-flex flex-column justify-content-center align-items-center"
-                            style={{ height: '30rem', width: '30rem' }}
+                            className="border border-danger d-flex flex-column justify-content-center align-items-center no-select"
+                            style={{ height: '20rem', width: '30rem' }}
                         >
-                            <span style={{ fontSize: '2rem' }}>Click and drag to move around</span>
-                            <span style={{ fontSize: '2rem' }}>Click to add a note</span>
-                            <span style={{ fontSize: '1rem' }}>(press enter to submit)</span>
+                            <span style={{ fontSize: '2rem' }}>Drag to move around</span>
+                            <span style={{ fontSize: '2rem' }}>Click/tap to add a note</span>
                         </div>
                     </Float>
-                    <Float offset={{ x: -300, y: 300 }}>Why hello there!</Float>
-                    <Float offset={{ x: 1200, y: 300 }}>How is it going?</Float>
-                    <Float offset={{ x: 600, y: 1100 }}>Going down!</Float>
-                    <Float offset={{ x: 600, y: -300 }}>Going up!</Float>
                 </Float>
             </div>
             <Float offset={{ x: 0, y: 15 }}>
-                <div className="btn btn-primary" onClick={() => setPos({ x: 0, y: 0 })}>
-                    Reset
+                <div className="d-flex flex-wrap justify-content-center">
+                    {document.fullscreenEnabled && (
+                        <div className="btn btn-primary mx-2 my-2" onClick={handleFullscreen}>
+                            Toggle Fullscreen
+                        </div>
+                    )}
+                    <div
+                        className="btn btn-primary mr-2 my-2"
+                        onClick={() => setPos({ x: 0, y: 0 })}
+                    >
+                        Reset View
+                    </div>
+                    {isLoggedIn ? (
+                        <div className="btn btn-primary mr-2" onClick={logout}>
+                            Logout
+                        </div>
+                    ) : (
+                        <div
+                            className="btn btn-primary mr-2"
+                            onClick={() => history.push(wasUser ? '/login' : '/register')}
+                        >
+                            {wasUser ? 'Login' : 'Register'}
+                        </div>
+                    )}
                 </div>
             </Float>
         </>

@@ -16,11 +16,13 @@ export interface INoteProps {
 
 const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) => {
     const pressHandler: HandlerFunc = ({ event }) => {
-        if (event.type === 'double' && event.isStationary && isEditable(id)) {
+        if (
+            event.isStationary &&
+            isEditable(id) &&
+            (event.type === 'double' || (event.origin === 'touch1' && event.type === 'hold'))
+        ) {
             removeNote(id)
             setDraft({ offset, initialContent: children })
-        } else if (event.type === 'tap' && event.isStationary) {
-            return 1
         } else if (event.isStationary && event.type !== 'start' && event.type !== 'end') {
             return 1
         }

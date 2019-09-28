@@ -12,9 +12,7 @@ interface INoteDraftProps {
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     const pressHandler: HandlerFunc = ({ event }) => {
-        if (event.type === 'tap' && event.isStationary) {
-            return 1
-        }
+        return 1
     }
 
     const { events } = useTouch(pressHandler)
@@ -63,13 +61,18 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
                         onChange={handleChange}
                     />
                 </form>
-                <button className="btn btn-success ml-2" onClick={handleSubmit}>
+                <button
+                    className="btn btn-success ml-2"
+                    onClick={handleSubmit}
+                    onTouchEnd={handleSubmit}
+                >
                     ✓
                 </button>
                 <button
                     role="button"
                     className="btn btn-danger ml-2"
                     onClick={() => setDraft(null)}
+                    onTouchEnd={() => setDraft(null)}
                 >
                     &times;
                 </button>

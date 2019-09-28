@@ -20,6 +20,7 @@ const useLogin = () => {
             let user = (await Axios.post<IToken>(LOGIN_ENDPOINT, { username, password })).data
             setUser(user)
             localStorage.setItem('user', JSON.stringify(user))
+            localStorage.setItem('wasUser', 'yes')
             return true
         } catch (err) {
             return false
@@ -41,6 +42,7 @@ const useLogin = () => {
             })).data
             setUser(user)
             localStorage.setItem('user', JSON.stringify(user))
+            localStorage.setItem('wasUser', 'yes')
             return true
         } catch (err) {
             return false
@@ -81,6 +83,7 @@ const useLogin = () => {
         isLoggedIn: Boolean(user.role && user.token),
         isAdmin: Boolean(user.role === 'admin'),
         isUser: (userid: number) => user.userid === userid,
+        wasUser: Boolean(localStorage.getItem('wasUser')),
     }
 }
 
