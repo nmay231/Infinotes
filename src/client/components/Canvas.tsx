@@ -39,63 +39,16 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
 
     const [pos, setPos] = React.useState<IPos>({ x: 0, y: 0 })
 
-    const [clickPos, setClickPos] = React.useState({ x: 0, y: 0 })
-    const [lastTouch, setLastTouch] = React.useState({ x: 0, y: 0 })
-    const [isClicking, setIsClicking] = React.useState(false)
-    const [cancelClick, setCancelClick] = React.useState(false)
-
     const createDraft = (draft: { offset: IPos; initialContent: string }) => {
         if (!isLoggedIn) {
-            history.push('/login')
+            return history.push('/login')
         }
         setDraft(draft)
-    }
-
-    const touchHandler: React.TouchEventHandler = (e: React.TouchEvent) => {
-        const touch = e.touches[0]
-        switch (e.type) {
-            case 'touchstart':
-                if (cancelClick) {
-                    setCancelClick(false)
-                }
-                setIsClicking(true)
-                setClickPos({ x: touch.pageX, y: touch.pageY })
-                setLastTouch({ x: touch.pageX, y: touch.pageY })
-                break
-            case 'touchmove':
-                if (!isClicking) {
-                    break
-                }
-                setPos(({ x, y }) => ({
-                    x: x + (touch.clientX - lastTouch.x),
-                    y: y + (touch.clientY - lastTouch.y),
-                }))
-                setLastTouch({ x: touch.clientX, y: touch.clientY })
-                break
-            case 'touchend':
-                if ((lastTouch.x - clickPos.x) ** 2 + (lastTouch.y - clickPos.y) ** 2 > 64) {
-                    setIsClicking(false)
-                    break
-                }
-                const float = document.getElementById('mainFloat')
-                createDraft({
-                    offset: {
-                        x: clickPos.x - parseInt(float.style.marginLeft) - 20,
-                        y: clickPos.y - parseInt(float.style.marginTop) - 10,
-                    },
-                    initialContent: '',
-                })
-                break
-        }
     }
 
     return (
         <>
             <div
-                // onTouchStart={touchHandler}
-                // onTouchEnd={touchHandler}
-                // onTouchMove={touchHandler}
-                // onTouchCancel={() => setIsClicking(false)}
                 {...events}
                 id="canvas"
                 className="position-absolute w-100 h-100"
