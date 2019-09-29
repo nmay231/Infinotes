@@ -33,11 +33,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     }
 
     const { events } = useTouch(pressHandler)
-<<<<<<< HEAD
     const { isLoggedIn, logout, wasUser } = useLogin()
-=======
-    const { isLoggedIn } = useLogin()
->>>>>>> Final version as capstone project (#1)
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -50,7 +46,6 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         setDraft(draft)
     }
 
-<<<<<<< HEAD
     React.useEffect(() => {
         if (!localStorage.getItem('fullscreen')) {
             // I'll figure out how to detect if you're on a mobile device later
@@ -67,8 +62,6 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         }
     }
 
-=======
->>>>>>> Final version as capstone project (#1)
     return (
         <>
             <div
