@@ -105,12 +105,12 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                         Reset View
                     </div>
                     {isLoggedIn ? (
-                        <div className="btn btn-primary mr-2" onClick={logout}>
+                        <div className="btn btn-primary mr-2 my-2" onClick={logout}>
                             Logout
                         </div>
                     ) : (
                         <div
-                            className="btn btn-primary mr-2"
+                            className="btn btn-primary mr-2 my-2"
                             onClick={() => history.push(wasUser ? '/login' : '/register')}
                         >
                             {wasUser ? 'Login' : 'Register'}
