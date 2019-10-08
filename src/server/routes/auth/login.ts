@@ -1,8 +1,10 @@
 /** @format */
 
 import { Router } from 'express'
-import knextion, { User } from '../../db'
+
 import { RecoverToken, CreateToken } from '../../utils/security/tokens'
+import knextion, { User } from '../../db'
+// Users(id, username, role, hash, firstName, lastName, numberOfNotes, _created)
 
 const router = Router()
 
@@ -22,7 +24,7 @@ router.post('/', async (req, res) => {
         })
     } catch (err) {
         console.error(err)
-        res.status(500).send('Server error')
+        res.sendStatus(500)
     }
 })
 

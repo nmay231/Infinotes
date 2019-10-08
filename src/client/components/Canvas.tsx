@@ -80,15 +80,6 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                         )
                     })}
                     {draft && <NoteDraft {...draft} />}
-                    <Float offset={{ x: 200, y: 100 }}>
-                        <div
-                            className="border border-danger d-flex flex-column justify-content-center align-items-center no-select"
-                            style={{ height: '20rem', width: '30rem' }}
-                        >
-                            <span style={{ fontSize: '2rem' }}>Drag to move around</span>
-                            <span style={{ fontSize: '2rem' }}>Click/tap to add a note</span>
-                        </div>
-                    </Float>
                 </Float>
             </div>
             <Float offset={{ x: 0, y: 15 }}>
