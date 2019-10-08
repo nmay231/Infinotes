@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Float from './Float'
-import { useNotes, useNoteDraft } from '../utils/useNotes'
+import { useNotes } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
 import useTouch, { HandlerFunc } from '../utils/useTouch'
 
