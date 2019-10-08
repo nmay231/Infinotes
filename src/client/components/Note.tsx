@@ -4,7 +4,7 @@ import * as React from 'react'
 import Float from './Float'
 import { useNotes } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
+import usePress, { IPressHandler } from '../utils/usePress'
 
 export interface INoteProps {
     id: number
@@ -15,7 +15,7 @@ export interface INoteProps {
 }
 
 const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) => {
-    const pressHandler: HandlerFunc = ({ event }) => {
+    const pressHandler: IPressHandler = ({ event }) => {
         if (
             event.isStationary &&
             isEditable(id) &&
@@ -28,7 +28,7 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) 
         }
     }
 
-    const { events } = useTouch(pressHandler)
+    const { eventHandlers } = usePress(pressHandler)
     const { isEditable, removeNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -39,7 +39,7 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) 
             <div
                 className="card p-2 no-select text-center"
                 style={{ width: 'auto', height: 'auto', minWidth }}
-                {...events}
+                {...eventHandlers}
             >
                 {children}
                 <footer className="blockquote-footer">{username}</footer>

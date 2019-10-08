@@ -16,11 +16,11 @@ interface MouseTouchEvent {
     durationms?: number
 }
 
-export type HandlerFunc = ({ event }: { event: MouseTouchEvent }) => number | void
+export type IPressHandler = ({ event }: { event: MouseTouchEvent }) => number | void
 
 // This keeps track of which components got triggered during a mouse/touch event
 // It only keeps track of two touches on mobile devices
-let eventStacks: { [key: string]: HandlerFunc[] } = {
+let eventStacks: { [key: string]: IPressHandler[] } = {
     mouse: [],
     touch1: [],
     touch2: [],
@@ -53,7 +53,7 @@ const getTouchOrigin = (e: React.TouchEvent): 'touch1' | 'touch2' => {
 
 const callHandlers = (event: MouseTouchEvent): void => {
     let skips: number = 0
-    for (let handler of eventStacks[event.origin].reduce((prev, cur) => [cur, ...prev], [])) {
+    for (let handler of [...eventStacks[event.origin]].reverse()) {
         if (skips-- <= 0) {
             skips = handler({ event }) || 0
         }
@@ -63,7 +63,7 @@ const callHandlers = (event: MouseTouchEvent): void => {
     }
 }
 
-const useTouch = (handler: HandlerFunc) => {
+const usePress = (handler: IPressHandler) => {
     const {
         startTime: [startTime, setStartTime],
         prevTime: [prevTime, setPrevTime],
@@ -199,7 +199,7 @@ const useTouch = (handler: HandlerFunc) => {
     }
 
     return {
-        events: {
+        eventHandlers: {
             onTouchStartCapture,
             onTouchStart,
             onTouchMove,
@@ -212,4 +212,4 @@ const useTouch = (handler: HandlerFunc) => {
     }
 }
 
-export default useTouch
+export default usePress

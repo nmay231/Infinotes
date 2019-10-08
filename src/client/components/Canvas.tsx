@@ -9,12 +9,12 @@ import useLogin from '../utils/useLogin'
 import { useNotes, useNoteDraft } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
 import { RouteComponentProps, withRouter } from 'react-router'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
+import usePress, { IPressHandler } from '../utils/usePress'
 
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
-    const pressHandler: HandlerFunc = ({ event }) => {
+    const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap' && event.isStationary) {
             const float = document.getElementById('mainFloat')
             createDraft({
@@ -32,7 +32,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         }
     }
 
-    const { events } = useTouch(pressHandler)
+    const { eventHandlers } = usePress(pressHandler)
     const { isLoggedIn, logout, wasUser } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
@@ -65,7 +65,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     return (
         <>
             <div
-                {...events}
+                {...eventHandlers}
                 id="canvas"
                 className="position-absolute w-100 h-100"
                 style={{ overflow: 'hidden', background: 'white' }}

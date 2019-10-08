@@ -4,7 +4,7 @@ import * as React from 'react'
 import Float from './Float'
 import { useNotes } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
+import usePress, { IPressHandler } from '../utils/usePress'
 import MoveIcon from './MoveIcon'
 
 interface INoteDraftProps {
@@ -12,11 +12,11 @@ interface INoteDraftProps {
 }
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
-    const pressHandler: HandlerFunc = ({ event }) => {
+    const pressHandler: IPressHandler = ({ event }) => {
         return 1
     }
 
-    const { events } = useTouch(pressHandler)
+    const { eventHandlers } = usePress(pressHandler)
     const { addNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -53,7 +53,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
                 id="noteDraft"
                 className="card p-2 d-flex flex-row"
                 style={{ width: '20rem' }}
-                {...events}
+                {...eventHandlers}
             >
                 <form onSubmit={handleSubmit}>
                     <input

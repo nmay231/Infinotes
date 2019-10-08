@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Float from './Float'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
+import usePress, { IPressHandler } from '../utils/usePress'
 
 const off: IPos = {
     x: -35,
@@ -14,18 +14,18 @@ interface IMoveIconProps {
 }
 
 const MoveIcon: React.FC<IMoveIconProps> = ({ move }) => {
-    const handler: HandlerFunc = ({ event }) => {
+    const handler: IPressHandler = ({ event }) => {
         if (event.type == 'move') {
             move(event.moveChange)
         }
         return 10
     }
 
-    const { events } = useTouch(handler)
+    const { eventHandlers } = usePress(handler)
 
     return (
         <Float offset={off}>
-            <div {...events} className="position-absolute card p-2 pointer no-select">
+            <div {...eventHandlers} className="position-absolute card p-2 pointer no-select">
                 M
             </div>
         </Float>
