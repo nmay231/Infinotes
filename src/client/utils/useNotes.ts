@@ -3,9 +3,9 @@
 import * as React from 'react'
 
 import { NotesContext } from '../components/context/NotesContext'
+import { NoteDraftContext } from '../components/context/NoteDraftContext'
 import { NOTES_API, join, USERS_API } from './apis'
 import useLogin from './useLogin'
-import { NoteDraftContext } from '../components/context/NoteDraftContext'
 
 export const useNotes = () => {
     const { json, user } = useLogin()
@@ -24,7 +24,19 @@ export const useNotes = () => {
             )
             setNotes(rawNotes)
         } catch (err) {
-            console.log('fail')
+            console.error('Failed to retrieve notes from server')
+        }
+    }
+
+    const fetchNote = async (id: number) => {
+        try {
+            let rawNote = await json<INote>(join(NOTES_API, `${id}`))
+            rawNote.username = (await json<Pick<INote, 'username'>>(
+                join(USERS_API, `${rawNote.userid}`, 'username'),
+            )).username
+            setNotes([...notes, rawNote])
+        } catch (err) {
+            console.error(`Failed to update note: ${id}`)
         }
     }
 
@@ -33,8 +45,18 @@ export const useNotes = () => {
             await json(NOTES_API, 'POST', note)
             fetchNotes()
         } catch (err) {
-            console.log("third time's a charm")
+            console.error('Failed to post new note')
         }
+    }
+
+    const hideNote = async (id: number) => {
+        setNotes(notes.filter((note) => note.id !== id))
+    }
+
+    const updateNote = async (note: Pick<INote, 'id'> & Partial<INote>) => {
+        const { content, offset } = note
+        await json(join(NOTES_API, `${note.id}`), 'PUT', { content, offset })
+        fetchNote(note.id)
     }
 
     const removeNote = async (id: number) => {
@@ -42,10 +64,11 @@ export const useNotes = () => {
             await json(join(NOTES_API, `${id}`), 'DELETE')
             fetchNotes()
         } catch (err) {
-            console.log('fail 2')
+            console.error('Failed to delete note')
         }
     }
 
+    // TODO
     const notesBy = (userid: number) => {}
 
     const isEditable = (noteId: number) => {
@@ -58,7 +81,10 @@ export const useNotes = () => {
     return {
         notes,
         fetchNotes,
+        fetchNote,
         addNote,
+        hideNote,
+        updateNote,
         removeNote,
         notesBy,
         isEditable,
@@ -66,6 +92,7 @@ export const useNotes = () => {
 }
 
 export const useNoteDraft = () => {
+    // TODO
     const [draft, setDraft] = React.useContext(NoteDraftContext)
     return {
         draft,

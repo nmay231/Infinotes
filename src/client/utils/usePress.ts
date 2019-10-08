@@ -1,6 +1,7 @@
 /** @format */
 
 import * as React from 'react'
+
 import { PressContext } from '../components/context/PressContext'
 
 type OriginType = 'mouse' | 'touch1' | 'touch2'
@@ -16,11 +17,11 @@ interface MouseTouchEvent {
     durationms?: number
 }
 
-export type HandlerFunc = ({ event }: { event: MouseTouchEvent }) => number | void
+export type IPressHandler = ({ event }: { event: MouseTouchEvent }) => number | void
 
 // This keeps track of which components got triggered during a mouse/touch event
 // It only keeps track of two touches on mobile devices
-let eventStacks: { [key: string]: HandlerFunc[] } = {
+let eventStacks: { [key: string]: IPressHandler[] } = {
     mouse: [],
     touch1: [],
     touch2: [],
@@ -34,7 +35,7 @@ const getTouchOrigin = (e: React.TouchEvent): 'touch1' | 'touch2' => {
     if (e.type === 'touchend' || e.type === 'touch cancel') {
         let origin = touchIds[touchId]
         delete touchIds[touchId]
-        return origin // HERE: origin is undefined?
+        return origin
     }
 
     if (typeof touchId !== 'number') {
@@ -53,7 +54,7 @@ const getTouchOrigin = (e: React.TouchEvent): 'touch1' | 'touch2' => {
 
 const callHandlers = (event: MouseTouchEvent): void => {
     let skips: number = 0
-    for (let handler of eventStacks[event.origin].reduce((prev, cur) => [cur, ...prev], [])) {
+    for (let handler of [...eventStacks[event.origin]].reverse()) {
         if (skips-- <= 0) {
             skips = handler({ event }) || 0
         }
@@ -63,7 +64,7 @@ const callHandlers = (event: MouseTouchEvent): void => {
     }
 }
 
-const useTouch = (handler: HandlerFunc) => {
+const usePress = (handler: IPressHandler) => {
     const {
         startTime: [startTime, setStartTime],
         prevTime: [prevTime, setPrevTime],
@@ -80,35 +81,36 @@ const useTouch = (handler: HandlerFunc) => {
         setHolding(null)
     }
 
-    //start, end, move, cancel
-    // HERE: add onTouchCancel
     const onTouchStartCapture = (e: React.TouchEvent) => {
         eventStacks[getTouchOrigin(e)].push(handler)
     }
 
     const onTouchStart = (e: React.TouchEvent) => {
         e.stopPropagation()
-        const origin = getTouchOrigin(e)
 
+        const origin = getTouchOrigin(e)
         const startPos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
         callHandlers({ isStationary: true, startPos, origin, type: 'start' })
-        setStartPos(startPos)
-        setPrevPos(startPos)
-        setIsStationary(true)
 
-        setStartTime(Date.now())
+        if (origin === 'touch1') {
+            setStartTime(Date.now())
+            setStartPos(startPos)
+            setPrevPos(startPos)
+            setIsStationary(true)
+        } else {
+            setIsStationary(false)
+            setCanBeDouble(false)
+        }
 
-        // if (!startTime) {
-        //     setStartTime(Date.now())
-        // } // HERE: what happens with two fingers?
-        // if (origin === 'touch2') {
-        //     setIsStationary(false)
-        // }
         setTimeout(() => setHolding((holding) => (holding === 'cancel' ? null : origin)), 700)
     }
 
     const onTouchMove = (e: React.TouchEvent) => {
         e.stopPropagation()
+        if (!startPos) {
+            return // The touch must have started outside of handled components
+        }
+
         const origin = getTouchOrigin(e)
         const touch = e.changedTouches[0]
         const moveChange: IPos = {
@@ -137,13 +139,15 @@ const useTouch = (handler: HandlerFunc) => {
             setCanBeDouble(true)
         }
         callHandlers({ isStationary, startPos, origin, type: 'end' })
-        setIsStationary(false)
-        setStartTime(NaN)
-        setPrevTime(Date.now())
-        setStartPos(null)
-        setPrevPos(null)
-        if (Date.now() - startTime < 700) {
-            setHolding('cancel')
+        if (origin === 'touch1') {
+            setStartTime(NaN)
+            setIsStationary(false)
+            setPrevTime(Date.now())
+            setStartPos(null)
+            setPrevPos(null)
+            if (Date.now() - startTime < 700) {
+                setHolding('cancel')
+            }
         }
     }
 
@@ -199,11 +203,12 @@ const useTouch = (handler: HandlerFunc) => {
     }
 
     return {
-        events: {
+        eventHandlers: {
             onTouchStartCapture,
             onTouchStart,
             onTouchMove,
             onTouchEnd,
+            onTouchCancel: onTouchEnd,
             onMouseDownCapture,
             onMouseDown,
             onMouseMove,
@@ -212,4 +217,4 @@ const useTouch = (handler: HandlerFunc) => {
     }
 }
 
-export default useTouch
+export default usePress

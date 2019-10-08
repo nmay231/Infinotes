@@ -1,8 +1,9 @@
 /** @format */
 
 import { Router } from 'express'
-import knextion from '../../db'
+
 import { isUser, BearerStrategy } from '../../middlewares/authCheckpoints'
+import knextion from '../../db'
 
 const router = Router()
 
@@ -18,14 +19,10 @@ router.get('/:id?', async (req, res) => {
             delete note.posx, note.posy
             return note
         })
-        if (id) {
-            res.status(200).json(result[0])
-        } else {
-            res.status(200).json(result)
-        }
+        res.status(200).json(id ? result[0] : result)
     } catch (err) {
         console.error(err)
-        res.status(500).json('Server Error')
+        res.sendStatus(500)
     }
 })
 
@@ -36,7 +33,7 @@ router.post('/', isUser, async (req, res) => {
     }
 
     try {
-        let [id] = await knextion('Notes').insert({
+        let [id] = await knextion('Notes').insert<[number]>({
             content,
             userid: req.user.id,
             posx: offset.x,
@@ -45,7 +42,7 @@ router.post('/', isUser, async (req, res) => {
         res.status(200).json({ id })
     } catch (err) {
         console.error(err)
-        res.status(500).json('Server Error')
+        res.sendStatus(500)
     }
 })
 
@@ -53,7 +50,7 @@ router.put('/:id', isUser, async (req, res) => {
     let { content, offset }: { content: string; offset: IPos } = req.body
     let id = req.params.id
     if (!content && !offset) {
-        return res.status(422).json('Must include content or offset in body')
+        return res.status(200).json('Nothing updated')
     }
 
     try {
@@ -68,15 +65,17 @@ router.put('/:id', isUser, async (req, res) => {
                 .json('You do not have significant permissions to perform this action')
         }
 
-        await knextion('Notes').update({
-            content,
-            posx: offset && offset.x,
-            posy: offset && offset.y,
-        })
+        await knextion('Notes')
+            .where({ id })
+            .update({
+                content,
+                posx: offset && offset.x,
+                posy: offset && offset.y,
+            })
         res.sendStatus(200)
     } catch (err) {
         console.error(err)
-        res.status(500).json('Internal server error')
+        res.sendStatus(500)
     }
 })
 
@@ -86,7 +85,7 @@ router.delete('/:id', isUser, async (req, res) => {
     try {
         let [{ userid }] = await knextion('Notes')
             .where({ id })
-            .select<INote[]>()
+            .select<INote[]>('userid')
         if (userid !== req.user.id && req.user.role !== 'admin') {
             return res
                 .status(401)
@@ -98,7 +97,7 @@ router.delete('/:id', isUser, async (req, res) => {
         res.sendStatus(200)
     } catch (err) {
         console.error(err)
-        res.status(500).json('Internal server error')
+        res.sendStatus(500)
     }
 })
 

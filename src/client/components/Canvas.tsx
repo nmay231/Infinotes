@@ -1,26 +1,28 @@
 /** @format */
 
 import * as React from 'react'
+import { RouteComponentProps, withRouter } from 'react-router'
+
+import usePress, { IPressHandler } from '../utils/usePress'
+import useLogin from '../utils/useLogin'
+import { useNotes } from '../utils/useNotes'
+import { NoteDraftContext } from './context/NoteDraftContext'
 
 import Float from './Float'
 import Note from './Note'
 import NoteDraft from './NoteDraft'
-import useLogin from '../utils/useLogin'
-import { useNotes, useNoteDraft } from '../utils/useNotes'
-import { NoteDraftContext } from './context/NoteDraftContext'
-import { RouteComponentProps, withRouter } from 'react-router'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
+import SelectionMenu from './SelectionMenu'
 
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
-    const pressHandler: HandlerFunc = ({ event }) => {
+    const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap' && event.isStationary) {
             const float = document.getElementById('mainFloat')
             createDraft({
                 offset: {
-                    x: event.startPos.x - parseInt(float.style.marginLeft),
-                    y: event.startPos.y - parseInt(float.style.marginTop),
+                    x: event.startPos.x - float.offsetLeft,
+                    y: event.startPos.y - float.offsetTop,
                 },
                 initialContent: '',
             })
@@ -32,8 +34,8 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         }
     }
 
-    const { events } = useTouch(pressHandler)
-    const { isLoggedIn, logout, wasUser } = useLogin()
+    const { eventHandlers } = usePress(pressHandler)
+    const { isLoggedIn } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -54,23 +56,15 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         }
     }, [])
 
-    const handleFullscreen = (e: React.MouseEvent) => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen()
-        } else {
-            document.exitFullscreen()
-        }
-    }
-
     return (
         <>
             <div
-                {...events}
+                {...eventHandlers}
                 id="canvas"
                 className="position-absolute w-100 h-100"
                 style={{ overflow: 'hidden', background: 'white' }}
             >
-                <Float offset={pos} id="mainFloat">
+                <Float offset={pos} id="mainFloat" centerContainer>
                     {notes.map((note) => {
                         let { content, id } = note
                         return (
@@ -80,44 +74,9 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                         )
                     })}
                     {draft && <NoteDraft {...draft} />}
-                    <Float offset={{ x: 200, y: 100 }}>
-                        <div
-                            className="border border-danger d-flex flex-column justify-content-center align-items-center no-select"
-                            style={{ height: '20rem', width: '30rem' }}
-                        >
-                            <span style={{ fontSize: '2rem' }}>Drag to move around</span>
-                            <span style={{ fontSize: '2rem' }}>Click/tap to add a note</span>
-                        </div>
-                    </Float>
                 </Float>
             </div>
-            <Float offset={{ x: 0, y: 15 }}>
-                <div className="d-flex flex-wrap justify-content-center">
-                    {document.fullscreenEnabled && (
-                        <div className="btn btn-primary mx-2 my-2" onClick={handleFullscreen}>
-                            Toggle Fullscreen
-                        </div>
-                    )}
-                    <div
-                        className="btn btn-primary mr-2 my-2"
-                        onClick={() => setPos({ x: 0, y: 0 })}
-                    >
-                        Reset View
-                    </div>
-                    {isLoggedIn ? (
-                        <div className="btn btn-primary mr-2 my-2" onClick={logout}>
-                            Logout
-                        </div>
-                    ) : (
-                        <div
-                            className="btn btn-primary mr-2 my-2"
-                            onClick={() => history.push(wasUser ? '/login' : '/register')}
-                        >
-                            {wasUser ? 'Login' : 'Register'}
-                        </div>
-                    )}
-                </div>
-            </Float>
+            <SelectionMenu resetView={() => setPos({ x: 0, y: 0 })} />
         </>
     )
 }
