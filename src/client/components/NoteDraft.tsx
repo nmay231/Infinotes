@@ -5,6 +5,7 @@ import Float from './Float'
 import { useNotes } from '../utils/useNotes'
 import { NoteDraftContext } from './context/NoteDraftContext'
 import useTouch, { HandlerFunc } from '../utils/useTouch'
+import MoveIcon from './MoveIcon'
 
 interface INoteDraftProps {
     offset: IPos
@@ -23,6 +24,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
         return <></>
     }
 
+    const [offset_, setOffset_] = React.useState(offset)
     const [content, setContent] = React.useState(draft.initialContent)
 
     const handleSubmit: React.FormEventHandler = (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,7 +33,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
         if (!content.length) {
             return setDraft(null)
         }
-        addNote({ offset, content })
+        addNote({ offset: offset_, content })
         setDraft(null)
     }
 
@@ -45,7 +47,8 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     }, [offset])
 
     return (
-        <Float offset={offset}>
+        <Float offset={offset_}>
+            <MoveIcon move={(d) => setOffset_((old) => ({ x: old.x + d.x, y: old.y + d.y }))} />
             <div
                 id="noteDraft"
                 className="card p-2 d-flex flex-row"
