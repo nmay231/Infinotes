@@ -80,10 +80,11 @@ const useLogin = () => {
         loginFromCache,
         json,
 
-        isLoggedIn: Boolean(user.role && user.token),
+        isLoggedIn: user.role !== 'guest',
         isAdmin: Boolean(user.role === 'admin'),
-        isUser: (userid: number) => user.userid === userid,
         wasUser: Boolean(localStorage.getItem('wasUser')),
+
+        tellIfUser: (userid: number) => user.userid === userid,
     }
 }
 

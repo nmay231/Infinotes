@@ -3,9 +3,9 @@
 import * as React from 'react'
 
 import { NotesContext } from '../components/context/NotesContext'
+import { NoteDraftContext } from '../components/context/NoteDraftContext'
 import { NOTES_API, join, USERS_API } from './apis'
 import useLogin from './useLogin'
-import { NoteDraftContext } from '../components/context/NoteDraftContext'
 
 export const useNotes = () => {
     const { json, user } = useLogin()
@@ -24,7 +24,7 @@ export const useNotes = () => {
             )
             setNotes(rawNotes)
         } catch (err) {
-            console.log('fail')
+            console.error('Failed to retrieve notes from server')
         }
     }
 
@@ -33,7 +33,7 @@ export const useNotes = () => {
             await json(NOTES_API, 'POST', note)
             fetchNotes()
         } catch (err) {
-            console.log("third time's a charm")
+            console.error('Failed to post new note')
         }
     }
 
@@ -42,10 +42,11 @@ export const useNotes = () => {
             await json(join(NOTES_API, `${id}`), 'DELETE')
             fetchNotes()
         } catch (err) {
-            console.log('fail 2')
+            console.error('Failed to delete note')
         }
     }
 
+    // TODO
     const notesBy = (userid: number) => {}
 
     const isEditable = (noteId: number) => {
@@ -66,6 +67,7 @@ export const useNotes = () => {
 }
 
 export const useNoteDraft = () => {
+    // TODO
     const [draft, setDraft] = React.useContext(NoteDraftContext)
     return {
         draft,

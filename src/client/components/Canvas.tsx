@@ -1,15 +1,16 @@
 /** @format */
 
 import * as React from 'react'
+import { RouteComponentProps, withRouter } from 'react-router'
+
+import usePress, { IPressHandler } from '../utils/usePress'
+import useLogin from '../utils/useLogin'
+import { useNotes } from '../utils/useNotes'
+import { NoteDraftContext } from './context/NoteDraftContext'
 
 import Float from './Float'
 import Note from './Note'
 import NoteDraft from './NoteDraft'
-import useLogin from '../utils/useLogin'
-import { useNotes, useNoteDraft } from '../utils/useNotes'
-import { NoteDraftContext } from './context/NoteDraftContext'
-import { RouteComponentProps, withRouter } from 'react-router'
-import usePress, { IPressHandler } from '../utils/usePress'
 
 interface ICanvasProps extends RouteComponentProps {}
 

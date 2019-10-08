@@ -3,10 +3,9 @@
 import * as React from 'react'
 import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom'
 
+import GlobalContext from './components/context/GlobalContext'
 import LoginPage from './views/LoginPage'
 import MainPage from './views/MainPage'
-
-import GlobalContext from './components/context/GlobalContext'
 
 const App: React.FC = () => {
     return (

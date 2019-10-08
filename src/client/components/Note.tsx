@@ -1,20 +1,21 @@
 /** @format */
 
 import * as React from 'react'
-import Float from './Float'
-import { useNotes } from '../utils/useNotes'
-import { NoteDraftContext } from './context/NoteDraftContext'
+
 import usePress, { IPressHandler } from '../utils/usePress'
+import { useNotes } from '../utils/useNotes'
+
+import Float from './Float'
+import { NoteDraftContext } from './context/NoteDraftContext'
 
 export interface INoteProps {
     id: number
     children: string
     offset: IPos
-    userid: number
     username: string
 }
 
-const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) => {
+const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     const pressHandler: IPressHandler = ({ event }) => {
         if (
             event.isStationary &&
@@ -22,7 +23,9 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username, userid }) 
             (event.type === 'double' || (event.origin === 'touch1' && event.type === 'hold'))
         ) {
             removeNote(id)
-            setDraft({ offset, initialContent: children })
+            if (!draft) {
+                setDraft({ offset, initialContent: children })
+            }
         } else if (event.isStationary && event.type !== 'start' && event.type !== 'end') {
             return 1
         }

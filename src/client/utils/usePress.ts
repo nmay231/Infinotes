@@ -1,6 +1,7 @@
 /** @format */
 
 import * as React from 'react'
+
 import { PressContext } from '../components/context/PressContext'
 
 type OriginType = 'mouse' | 'touch1' | 'touch2'
@@ -34,7 +35,7 @@ const getTouchOrigin = (e: React.TouchEvent): 'touch1' | 'touch2' => {
     if (e.type === 'touchend' || e.type === 'touch cancel') {
         let origin = touchIds[touchId]
         delete touchIds[touchId]
-        return origin // HERE: origin is undefined?
+        return origin
     }
 
     if (typeof touchId !== 'number') {
@@ -80,35 +81,36 @@ const usePress = (handler: IPressHandler) => {
         setHolding(null)
     }
 
-    //start, end, move, cancel
-    // HERE: add onTouchCancel
     const onTouchStartCapture = (e: React.TouchEvent) => {
         eventStacks[getTouchOrigin(e)].push(handler)
     }
 
     const onTouchStart = (e: React.TouchEvent) => {
         e.stopPropagation()
-        const origin = getTouchOrigin(e)
 
+        const origin = getTouchOrigin(e)
         const startPos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
         callHandlers({ isStationary: true, startPos, origin, type: 'start' })
-        setStartPos(startPos)
-        setPrevPos(startPos)
-        setIsStationary(true)
 
-        setStartTime(Date.now())
+        if (origin === 'touch1') {
+            setStartTime(Date.now())
+            setStartPos(startPos)
+            setPrevPos(startPos)
+            setIsStationary(true)
+        } else {
+            setIsStationary(false)
+            setCanBeDouble(false)
+        }
 
-        // if (!startTime) {
-        //     setStartTime(Date.now())
-        // } // HERE: what happens with two fingers?
-        // if (origin === 'touch2') {
-        //     setIsStationary(false)
-        // }
         setTimeout(() => setHolding((holding) => (holding === 'cancel' ? null : origin)), 700)
     }
 
     const onTouchMove = (e: React.TouchEvent) => {
         e.stopPropagation()
+        if (!startPos) {
+            return // The touch must have started outside of handled components
+        }
+
         const origin = getTouchOrigin(e)
         const touch = e.changedTouches[0]
         const moveChange: IPos = {
@@ -137,13 +139,15 @@ const usePress = (handler: IPressHandler) => {
             setCanBeDouble(true)
         }
         callHandlers({ isStationary, startPos, origin, type: 'end' })
-        setIsStationary(false)
-        setStartTime(NaN)
-        setPrevTime(Date.now())
-        setStartPos(null)
-        setPrevPos(null)
-        if (Date.now() - startTime < 700) {
-            setHolding('cancel')
+        if (origin === 'touch1') {
+            setStartTime(NaN)
+            setIsStationary(false)
+            setPrevTime(Date.now())
+            setStartPos(null)
+            setPrevPos(null)
+            if (Date.now() - startTime < 700) {
+                setHolding('cancel')
+            }
         }
     }
 
@@ -204,6 +208,7 @@ const usePress = (handler: IPressHandler) => {
             onTouchStart,
             onTouchMove,
             onTouchEnd,
+            onTouchCancel: onTouchEnd,
             onMouseDownCapture,
             onMouseDown,
             onMouseMove,
