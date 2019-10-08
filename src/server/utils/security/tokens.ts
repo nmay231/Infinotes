@@ -23,7 +23,6 @@ export const CreateToken = async (payload: IPayload) => {
 
 export const RecoverToken = async (userid: number) => {
     let tokenRow: { token: string; expires: Date }
-    console.log('start')
     try {
         ;[tokenRow] = await knextion('Tokens')
             .where({ userid })

@@ -3,8 +3,8 @@
 import { Router } from 'express'
 
 import { HashPassword } from '../../utils/security/passwords'
-import knextion from '../../db'
 import { CreateToken } from '../../utils/security/tokens'
+import knextion from '../../db'
 // Users(id, username, role, hash, firstName, lastName, numberOfNotes, _created)
 
 const router = Router()
@@ -17,6 +17,7 @@ router.post('/', async (req, res) => {
             lastName,
             password,
         }: { username: string; firstName: string; lastName: string; password: string } = req.body
+
         let hash = HashPassword(password)
         let [userid] = await knextion('Users').insert<[number]>({
             username,
@@ -30,7 +31,7 @@ router.post('/', async (req, res) => {
         res.status(200).json({ userid, firstName, lastName, role: 'guest', token })
     } catch (err) {
         console.error(err)
-        res.status(500).json('Server error')
+        res.sendStatus(500)
     }
 })
 

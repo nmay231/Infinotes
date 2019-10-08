@@ -1,20 +1,21 @@
 /** @format */
 
 import * as React from 'react'
+import { RouteComponentProps, withRouter } from 'react-router'
+
+import usePress, { IPressHandler } from '../utils/usePress'
+import useLogin from '../utils/useLogin'
+import { useNotes } from '../utils/useNotes'
+import { NoteDraftContext } from './context/NoteDraftContext'
 
 import Float from './Float'
 import Note from './Note'
 import NoteDraft from './NoteDraft'
-import useLogin from '../utils/useLogin'
-import { useNotes, useNoteDraft } from '../utils/useNotes'
-import { NoteDraftContext } from './context/NoteDraftContext'
-import { RouteComponentProps, withRouter } from 'react-router'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
 
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
-    const pressHandler: HandlerFunc = ({ event }) => {
+    const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap' && event.isStationary) {
             const float = document.getElementById('mainFloat')
             createDraft({
@@ -32,7 +33,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
         }
     }
 
-    const { events } = useTouch(pressHandler)
+    const { eventHandlers } = usePress(pressHandler)
     const { isLoggedIn, logout, wasUser } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
@@ -65,7 +66,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     return (
         <>
             <div
-                {...events}
+                {...eventHandlers}
                 id="canvas"
                 className="position-absolute w-100 h-100"
                 style={{ overflow: 'hidden', background: 'white' }}
@@ -80,15 +81,6 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                         )
                     })}
                     {draft && <NoteDraft {...draft} />}
-                    <Float offset={{ x: 200, y: 100 }}>
-                        <div
-                            className="border border-danger d-flex flex-column justify-content-center align-items-center no-select"
-                            style={{ height: '20rem', width: '30rem' }}
-                        >
-                            <span style={{ fontSize: '2rem' }}>Drag to move around</span>
-                            <span style={{ fontSize: '2rem' }}>Click/tap to add a note</span>
-                        </div>
-                    </Float>
                 </Float>
             </div>
             <Float offset={{ x: 0, y: 15 }}>

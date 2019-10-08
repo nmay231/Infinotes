@@ -1,10 +1,12 @@
 /** @format */
 
 import * as React from 'react'
-import Float from './Float'
+
 import { useNotes } from '../utils/useNotes'
+import usePress, { IPressHandler } from '../utils/usePress'
 import { NoteDraftContext } from './context/NoteDraftContext'
-import useTouch, { HandlerFunc } from '../utils/useTouch'
+
+import Float from './Float'
 import MoveIcon from './MoveIcon'
 
 interface INoteDraftProps {
@@ -12,11 +14,13 @@ interface INoteDraftProps {
 }
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
-    const pressHandler: HandlerFunc = ({ event }) => {
-        return 1
+    const pressHandler: IPressHandler = ({ event }) => {
+        if (event.type !== 'move') {
+            return 1
+        }
     }
 
-    const { events } = useTouch(pressHandler)
+    const { eventHandlers } = usePress(pressHandler)
     const { addNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -46,14 +50,17 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
         document.getElementById('noteDraftInput').focus()
     }, [offset])
 
+    const moveDraft = (distance: IPos) =>
+        setOffset_((old) => ({ x: old.x + distance.x, y: old.y + distance.y }))
+
     return (
         <Float offset={offset_}>
-            <MoveIcon move={(d) => setOffset_((old) => ({ x: old.x + d.x, y: old.y + d.y }))} />
+            <MoveIcon move={moveDraft} />
             <div
                 id="noteDraft"
                 className="card p-2 d-flex flex-row"
                 style={{ width: '20rem' }}
-                {...events}
+                {...eventHandlers}
             >
                 <form onSubmit={handleSubmit}>
                     <input

@@ -1,12 +1,12 @@
 /** @format */
 
 import * as React from 'react'
+import { RouteComponentProps, withRouter } from 'react-router'
+import { Link } from 'react-router-dom'
 
 import FormField from '../components/commons/FormField'
 import FormButton from '../components/commons/FormButton'
-import { RouteComponentProps, withRouter } from 'react-router'
 import useLogin from '../utils/useLogin'
-import { Link } from 'react-router-dom'
 
 interface ILoginPageProps extends RouteComponentProps {}
 
@@ -29,9 +29,9 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
                 !password.length ||
                 !confirmPassword.length
             ) {
-                alert('Please fill out all required fields')
+                return alert('Please fill out all required fields')
             } else if (password !== confirmPassword) {
-                alert('Passwords do not match')
+                return alert('Passwords do not match')
             }
 
             if (await register(firstName, lastName, username, password)) {
@@ -41,7 +41,7 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
             }
         } else {
             if (!username.length || !password.length) {
-                alert('Please fill out the username and password')
+                return alert('Please fill out the username and password')
             }
 
             if (await loginLocal(username, password)) {
@@ -52,10 +52,18 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
         }
     }
 
+    React.useEffect(() => {
+        try {
+            document.getElementById('First-Name').focus()
+        } catch (e) {
+            document.getElementById('User-Name').focus()
+        }
+    }, [isRegister])
+
     return (
         <section className="row flex-column justify-content-center align-items-center min-vh-100 min-vw-100">
             <h1 className="mb-5 text-center">
-                {isRegister ? 'Register' : 'Login'} to add notes to the board
+                Please {isRegister ? 'register' : 'login'} to add notes to the board
             </h1>
             <div className="col-xl-4 col-lg-6 col-md-8 col-10">
                 <form className="card">
