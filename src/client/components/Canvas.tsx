@@ -20,8 +20,8 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
             const float = document.getElementById('mainFloat')
             createDraft({
                 offset: {
-                    x: event.startPos.x - parseInt(float.style.marginLeft),
-                    y: event.startPos.y - parseInt(float.style.marginTop),
+                    x: event.startPos.x - float.offsetLeft,
+                    y: event.startPos.y - float.offsetTop,
                 },
                 initialContent: '',
             })
@@ -71,7 +71,13 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                 className="position-absolute w-100 h-100"
                 style={{ overflow: 'hidden', background: 'white' }}
             >
-                <Float offset={pos} id="mainFloat">
+                <Float offset={pos} id="mainFloat" center1>
+                    {/* <div style={{ left: '50%', marginLeft: '-50%', top: '50%', marginTop: '-50%' }}>
+                        what up?
+                      </div> */}
+                    <Float offset={{ x: 0, y: 0 }} center2>
+                        <div style={{ fontSize: '10rem' }}>+</div>
+                    </Float>
                     {notes.map((note) => {
                         let { content, id } = note
                         return (
@@ -83,7 +89,10 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                     {draft && <NoteDraft {...draft} />}
                 </Float>
             </div>
-            <Float offset={{ x: 0, y: 15 }}>
+            <div className="position-relative" style={{ maxHeight: '5rem' }}>
+                testing
+            </div>
+            {/* <div className="position-relative" style={{ left: '0%' }}>
                 <div className="d-flex flex-wrap justify-content-center">
                     {document.fullscreenEnabled && (
                         <div className="btn btn-primary mx-2 my-2" onClick={handleFullscreen}>
@@ -109,7 +118,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                         </div>
                     )}
                 </div>
-            </Float>
+            </div> */}
         </>
     )
 }

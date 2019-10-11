@@ -38,7 +38,7 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     const minWidth = 2 + Math.round(children.length ** 0.5) + 'rem'
 
     return (
-        <Float offset={offset}>
+        <Float offset={offset} center2>
             <div
                 className="card p-2 no-select text-center"
                 style={{ width: 'auto', height: 'auto', minWidth }}

@@ -53,39 +53,44 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     const moveDraft = (distance: IPos) =>
         setOffset_((old) => ({ x: old.x + distance.x, y: old.y + distance.y }))
 
+    const minWidth = 2 + Math.round(content.length ** 0.5) + 'rem'
+
     return (
-        <Float offset={offset_}>
+        <Float offset={offset_} center2>
             <MoveIcon move={moveDraft} />
             <div
                 id="noteDraft"
-                className="card p-2 d-flex flex-row"
-                style={{ width: '20rem' }}
+                className="p-2 d-flex flex-column justify-content-center"
                 {...eventHandlers}
             >
-                <form onSubmit={handleSubmit}>
-                    <input
+                <form className="card p-2" onSubmit={handleSubmit}>
+                    <textarea
+                        rows={4}
+                        cols={100}
                         id="noteDraftInput"
-                        type="text"
-                        className="form-control ml-auto mb-n3"
+                        className="form-control text-center"
+                        style={{ minWidth }}
                         value={content}
                         onChange={handleChange}
                     />
                 </form>
-                <button
-                    className="btn btn-success ml-2"
-                    onClick={handleSubmit}
-                    onTouchEnd={handleSubmit}
-                >
-                    ✓
-                </button>
-                <button
-                    role="button"
-                    className="btn btn-danger ml-2"
-                    onClick={() => setDraft(null)}
-                    onTouchEnd={() => setDraft(null)}
-                >
-                    &times;
-                </button>
+                <div className="d-flex justify-content-center">
+                    <button
+                        className="btn btn-success"
+                        onClick={handleSubmit}
+                        onTouchEnd={handleSubmit}
+                    >
+                        ✓
+                    </button>
+                    <button
+                        role="button"
+                        className="btn btn-danger ml-2"
+                        onClick={() => setDraft(null)}
+                        onTouchEnd={() => setDraft(null)}
+                    >
+                        &times;
+                    </button>
+                </div>
             </div>
         </Float>
     )
