@@ -11,6 +11,7 @@ import { NoteDraftContext } from './context/NoteDraftContext'
 import Float from './Float'
 import Note from './Note'
 import NoteDraft from './NoteDraft'
+import SelectionMenu from './SelectionMenu'
 
 interface ICanvasProps extends RouteComponentProps {}
 
@@ -34,7 +35,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { isLoggedIn, logout, wasUser } = useLogin()
+    const { isLoggedIn } = useLogin()
     const { notes } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
@@ -54,14 +55,6 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
             localStorage.setItem('fullscreen', 'fullscreen')
         }
     }, [])
-
-    const handleFullscreen = (e: React.MouseEvent) => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen()
-        } else {
-            document.exitFullscreen()
-        }
-    }
 
     return (
         <>
@@ -83,33 +76,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                     {draft && <NoteDraft {...draft} />}
                 </Float>
             </div>
-            <div className="position-relative" style={{ maxHeight: '5rem' }}>
-                testing
-            </div>
-            <div className="position-relative my-auto ml-auto" style={{ top: '50%' }}>
-                <div className="d-flex flex-column flex-wrap justify-content-center mr-2">
-                    {document.fullscreenEnabled && (
-                        <div className="btn btn-primary my-2" onClick={handleFullscreen}>
-                            Toggle Fullscreen
-                        </div>
-                    )}
-                    <div className="btn btn-primary my-2" onClick={() => setPos({ x: 0, y: 0 })}>
-                        Reset View
-                    </div>
-                    {isLoggedIn ? (
-                        <div className="btn btn-primary my-2" onClick={logout}>
-                            Logout
-                        </div>
-                    ) : (
-                        <div
-                            className="btn btn-primary mr-2 my-2"
-                            onClick={() => history.push(wasUser ? '/login' : '/register')}
-                        >
-                            {wasUser ? 'Login' : 'Register'}
-                        </div>
-                    )}
-                </div>
-            </div>
+            <SelectionMenu resetView={() => setPos({ x: 0, y: 0 })} />
         </>
     )
 }
