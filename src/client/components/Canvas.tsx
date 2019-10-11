@@ -71,13 +71,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                 className="position-absolute w-100 h-100"
                 style={{ overflow: 'hidden', background: 'white' }}
             >
-                <Float offset={pos} id="mainFloat" center1>
-                    {/* <div style={{ left: '50%', marginLeft: '-50%', top: '50%', marginTop: '-50%' }}>
-                        what up?
-                      </div> */}
-                    <Float offset={{ x: 0, y: 0 }} center2>
-                        <div style={{ fontSize: '10rem' }}>+</div>
-                    </Float>
+                <Float offset={pos} id="mainFloat" centerContainer>
                     {notes.map((note) => {
                         let { content, id } = note
                         return (
@@ -92,21 +86,18 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
             <div className="position-relative" style={{ maxHeight: '5rem' }}>
                 testing
             </div>
-            {/* <div className="position-relative" style={{ left: '0%' }}>
-                <div className="d-flex flex-wrap justify-content-center">
+            <div className="position-relative my-auto ml-auto" style={{ top: '50%' }}>
+                <div className="d-flex flex-column flex-wrap justify-content-center mr-2">
                     {document.fullscreenEnabled && (
-                        <div className="btn btn-primary mx-2 my-2" onClick={handleFullscreen}>
+                        <div className="btn btn-primary my-2" onClick={handleFullscreen}>
                             Toggle Fullscreen
                         </div>
                     )}
-                    <div
-                        className="btn btn-primary mr-2 my-2"
-                        onClick={() => setPos({ x: 0, y: 0 })}
-                    >
+                    <div className="btn btn-primary my-2" onClick={() => setPos({ x: 0, y: 0 })}>
                         Reset View
                     </div>
                     {isLoggedIn ? (
-                        <div className="btn btn-primary mr-2 my-2" onClick={logout}>
+                        <div className="btn btn-primary my-2" onClick={logout}>
                             Logout
                         </div>
                     ) : (
@@ -118,7 +109,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                         </div>
                     )}
                 </div>
-            </div> */}
+            </div>
         </>
     )
 }

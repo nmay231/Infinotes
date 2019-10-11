@@ -5,11 +5,17 @@ import * as React from 'react'
 export interface IFloatProps {
     offset: IPos
     id?: string
-    center1?: boolean
-    center2?: boolean
+    centerContainer?: boolean
+    centerX?: boolean
 }
 
-const Float: React.FC<IFloatProps> = ({ offset: { x, y }, id, children, center1, center2 }) => {
+const Float: React.FC<IFloatProps> = ({
+    offset: { x, y },
+    id,
+    children,
+    centerContainer,
+    centerX,
+}) => {
     return (
         <div
             id={id}
@@ -17,11 +23,10 @@ const Float: React.FC<IFloatProps> = ({ offset: { x, y }, id, children, center1,
             style={{
                 marginLeft: x,
                 marginTop: y,
-                ...(center1 ? { left: '50%', top: '50%' } : {}),
+                ...(centerContainer ? { left: '50%', top: '50%' } : {}),
             }}
-            // style={{ marginLeft: x, marginTop: y }}
         >
-            <div className="position-relative" style={center2 ? { left: '-50%', top: '-50%' } : {}}>
+            <div className="position-relative" style={centerX ? { left: '-50%', top: '-50%' } : {}}>
                 {children}
             </div>
         </div>

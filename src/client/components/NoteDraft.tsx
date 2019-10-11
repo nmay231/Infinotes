@@ -15,6 +15,9 @@ interface INoteDraftProps {
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     const pressHandler: IPressHandler = ({ event }) => {
+        if (event.type === 'tap') {
+            document.getElementById('noteDraftInput').focus()
+        }
         if (event.type !== 'move') {
             return 1
         }
@@ -22,11 +25,9 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
 
     const { eventHandlers } = usePress(pressHandler)
     const { addNote } = useNotes()
+    // Using context here causes a render when it's unmounted
+    // Will be fixed with the introduction of redux
     const [draft, setDraft] = React.useContext(NoteDraftContext)
-
-    if (!draft) {
-        return <></>
-    }
 
     const [offset_, setOffset_] = React.useState(offset)
     const [content, setContent] = React.useState(draft.initialContent)
@@ -53,25 +54,30 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     const moveDraft = (distance: IPos) =>
         setOffset_((old) => ({ x: old.x + distance.x, y: old.y + distance.y }))
 
-    const minWidth = 2 + Math.round(content.length ** 0.5) + 'rem'
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key.toLowerCase() === 'enter') {
+            e.preventDefault()
+            handleSubmit(e)
+        }
+    }
 
     return (
-        <Float offset={offset_} center2>
+        <Float offset={offset_} centerX>
             <MoveIcon move={moveDraft} />
             <div
                 id="noteDraft"
-                className="p-2 d-flex flex-column justify-content-center"
+                className="d-flex flex-column justify-content-center"
                 {...eventHandlers}
             >
-                <form className="card p-2" onSubmit={handleSubmit}>
+                <form className="card p-2 mb-1" onSubmit={handleSubmit}>
                     <textarea
                         rows={4}
-                        cols={100}
                         id="noteDraftInput"
                         className="form-control text-center"
-                        style={{ minWidth }}
+                        style={{ minWidth: '16rem', resize: 'none' }}
                         value={content}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                     />
                 </form>
                 <div className="d-flex justify-content-center">
