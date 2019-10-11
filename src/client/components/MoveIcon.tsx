@@ -25,11 +25,11 @@ const MoveIcon: React.FC<IMoveIconProps> = ({ move }) => {
     const { eventHandlers } = usePress(handler)
 
     return (
-        <Float offset={offset}>
-            <div {...eventHandlers} className="position-absolute card p-2 pointer no-select">
+        <div className="position-absolute" style={{ marginLeft: -35, marginTop: -40 }}>
+            <div {...eventHandlers} className="card p-2 pointer no-select">
                 M
             </div>
-        </Float>
+        </div>
     )
 }
 

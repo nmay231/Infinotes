@@ -15,6 +15,11 @@ export interface INoteProps {
     username: string
 }
 
+const footerStyle = {
+    color: '#6c757d',
+    fontSize: '80%',
+}
+
 const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     const pressHandler: IPressHandler = ({ event }) => {
         if (
@@ -22,8 +27,8 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
             isEditable(id) &&
             (event.type === 'double' || (event.origin === 'touch1' && event.type === 'hold'))
         ) {
-            removeNote(id)
             if (!draft) {
+                removeNote(id)
                 setDraft({ offset, initialContent: children })
             }
         } else if (event.isStationary && event.type !== 'start' && event.type !== 'end') {
@@ -38,14 +43,16 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     const minWidth = 2 + Math.round(children.length ** 0.5) + 'rem'
 
     return (
-        <Float offset={offset}>
+        <Float offset={offset} centerX>
             <div
                 className="card p-2 no-select text-center"
-                style={{ width: 'auto', height: 'auto', minWidth }}
+                style={{ width: 'auto', height: 'auto', minWidth, maxWidth: '16rem' }}
                 {...eventHandlers}
             >
                 {children}
-                <footer className="blockquote-footer">{username}</footer>
+                <p className="mb-0" style={footerStyle}>
+                    by <i>{username}</i>
+                </p>
             </div>
         </Float>
     )
