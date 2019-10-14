@@ -2,21 +2,21 @@
 
 import * as React from 'react'
 
+interface INoteDraft {
+    initialContent: string
+    offset: IPos
+    noteId?: number
+}
+
 export const NoteDraftContext = React.createContext<
-    [
-        { initialContent: string; offset: IPos },
-        React.Dispatch<React.SetStateAction<{ initialContent: string; offset: IPos }>>,
-    ]
+    [INoteDraft, React.Dispatch<React.SetStateAction<INoteDraft>>]
 >([
     { initialContent: '', offset: { x: 0, y: 0 } },
     () => console.log('This developer failed in life'),
 ])
 
 export const NoteDraftProvider: React.FC = ({ children }) => {
-    const [NoteDraft, setNoteDraft] = React.useState<{
-        initialContent: string
-        offset: IPos
-    } | null>(null)
+    const [NoteDraft, setNoteDraft] = React.useState<INoteDraft | null>(null)
 
     return (
         <NoteDraftContext.Provider value={[NoteDraft, setNoteDraft]}>

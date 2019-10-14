@@ -65,11 +65,13 @@ router.put('/:id', isUser, async (req, res) => {
                 .json('You do not have significant permissions to perform this action')
         }
 
-        await knextion('Notes').update({
-            content,
-            posx: offset && offset.x,
-            posy: offset && offset.y,
-        })
+        await knextion('Notes')
+            .where({ id })
+            .update({
+                content,
+                posx: offset && offset.x,
+                posy: offset && offset.y,
+            })
         res.sendStatus(200)
     } catch (err) {
         console.error(err)

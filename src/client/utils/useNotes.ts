@@ -28,6 +28,18 @@ export const useNotes = () => {
         }
     }
 
+    const fetchNote = async (id: number) => {
+        try {
+            let rawNote = await json<INote>(join(NOTES_API, `${id}`))
+            rawNote.username = (await json<Pick<INote, 'username'>>(
+                join(USERS_API, `${rawNote.userid}`, 'username'),
+            )).username
+            setNotes([...notes, rawNote])
+        } catch (err) {
+            console.error(`Failed to update note: ${id}`)
+        }
+    }
+
     const addNote = async (note: { content: string; offset: IPos }) => {
         try {
             await json(NOTES_API, 'POST', note)
@@ -35,6 +47,16 @@ export const useNotes = () => {
         } catch (err) {
             console.error('Failed to post new note')
         }
+    }
+
+    const hideNote = async (id: number) => {
+        setNotes(notes.filter((note) => note.id !== id))
+    }
+
+    const updateNote = async (note: Pick<INote, 'id'> & Partial<INote>) => {
+        const { content, offset } = note
+        await json(join(NOTES_API, `${note.id}`), 'PUT', { content, offset })
+        fetchNote(note.id)
     }
 
     const removeNote = async (id: number) => {
@@ -59,7 +81,10 @@ export const useNotes = () => {
     return {
         notes,
         fetchNotes,
+        fetchNote,
         addNote,
+        hideNote,
+        updateNote,
         removeNote,
         notesBy,
         isEditable,

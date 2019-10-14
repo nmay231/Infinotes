@@ -8,11 +8,8 @@ import { useNotes } from '../utils/useNotes'
 import Float from './Float'
 import { NoteDraftContext } from './context/NoteDraftContext'
 
-export interface INoteProps {
-    id: number
+export interface INoteProps extends Pick<INote, 'id' | 'offset' | 'username'> {
     children: string
-    offset: IPos
-    username: string
 }
 
 const footerStyle = {
@@ -28,8 +25,8 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
             (event.type === 'double' || (event.origin === 'touch1' && event.type === 'hold'))
         ) {
             if (!draft) {
-                removeNote(id)
-                setDraft({ offset, initialContent: children })
+                hideNote(id)
+                setDraft({ offset, initialContent: children, noteId: id })
             }
         } else if (event.isStationary && event.type !== 'start' && event.type !== 'end') {
             return 1
@@ -37,7 +34,7 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { isEditable, removeNote } = useNotes()
+    const { isEditable, hideNote } = useNotes()
     const [draft, setDraft] = React.useContext(NoteDraftContext)
 
     const minWidth = 2 + Math.round(children.length ** 0.5) + 'rem'
