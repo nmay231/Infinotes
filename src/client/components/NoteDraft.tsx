@@ -24,7 +24,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { addNote } = useNotes()
+    const { addNote, updateNote, removeNote } = useNotes()
     // Using context here causes a render when it's unmounted
     // Will be fixed with the introduction of redux
     const [draft, setDraft] = React.useContext(NoteDraftContext)
@@ -35,10 +35,22 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     const handleSubmit: React.FormEventHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        if (!content.length) {
-            return setDraft(null)
+        if (!content.length && draft.noteId) {
+            removeNote(draft.noteId)
+        } else if (content.length) {
+            if (draft.noteId) {
+                updateNote({ id: draft.noteId, content, offset: offset_ })
+            } else {
+                addNote({ offset: offset_, content })
+            }
         }
-        addNote({ offset: offset_, content })
+        setDraft(null)
+    }
+
+    const deleteSelf = () => {
+        if (draft.noteId) {
+            removeNote(draft.noteId)
+        }
         setDraft(null)
     }
 
@@ -91,8 +103,8 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
                     <button
                         role="button"
                         className="btn btn-danger ml-2"
-                        onClick={() => setDraft(null)}
-                        onTouchEnd={() => setDraft(null)}
+                        onClick={deleteSelf}
+                        onTouchEnd={deleteSelf}
                     >
                         &times;
                     </button>
