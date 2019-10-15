@@ -44,6 +44,13 @@ declare interface IUser {
     _created: Date
 }
 
+// Redux state
+declare interface IState {
+    token: IToken
+    failedLoginAttempts: number
+}
+
+// Express
 declare namespace Express {
     interface User extends IUser {}
 }

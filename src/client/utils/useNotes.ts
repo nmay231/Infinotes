@@ -8,7 +8,7 @@ import { NOTES_API, join, USERS_API } from './apis'
 import useLogin from './useLogin'
 
 export const useNotes = () => {
-    const { json, user } = useLogin()
+    const { json, token } = useLogin()
 
     const [notes, setNotes] = React.useContext(NotesContext)
 
@@ -73,8 +73,8 @@ export const useNotes = () => {
 
     const isEditable = (noteId: number) => {
         return (
-            user.role === 'admin' ||
-            notes.filter((note) => note.id === noteId)[0].userid === user.userid
+            token.role === 'admin' ||
+            notes.filter((note) => note.id === noteId)[0].userid === token.userid
         )
     }
 

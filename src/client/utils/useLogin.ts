@@ -1,28 +1,36 @@
 /** @format */
 
-import * as React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import Axios from 'axios'
 import { Method } from 'axios'
 
-import { LoginContext, dummyUser } from '../components/context/LoginContext'
 import { LOGIN_ENDPOINT, REGISTER_ENDPOINT, unauthedJson } from './apis'
+import { logout as logoutAction, setToken, failLogin } from '../redux/actions/userActions'
+
+const maxFailedLoginAttempts = 5
 
 const useLogin = () => {
-    const [user, setUser] = React.useContext(LoginContext)
+    const token = useSelector((state: IState) => state.token)
+    const failedLoginAttempts = useSelector((state: IState) => state.failedLoginAttempts)
+    const dispatch = useDispatch()
 
     const logout = () => {
-        setUser(dummyUser)
+        dispatch(logoutAction())
         localStorage.removeItem('user')
     }
 
     const loginLocal = async (username: string, password: string) => {
+        if (failedLoginAttempts >= maxFailedLoginAttempts) {
+            return false
+        }
         try {
             let user = (await Axios.post<IToken>(LOGIN_ENDPOINT, { username, password })).data
-            setUser(user)
+            dispatch(setToken(user))
             localStorage.setItem('user', JSON.stringify(user))
             localStorage.setItem('wasUser', 'yes')
             return true
         } catch (err) {
+            dispatch(failLogin())
             return false
         }
     }
@@ -40,7 +48,7 @@ const useLogin = () => {
                 username,
                 password,
             })).data
-            setUser(user)
+            dispatch(setToken(user))
             localStorage.setItem('user', JSON.stringify(user))
             localStorage.setItem('wasUser', 'yes')
             return true
@@ -52,7 +60,8 @@ const useLogin = () => {
     const loginFromCache = () => {
         let user: IToken = JSON.parse(localStorage.getItem('user'))
         if (user) {
-            setUser(user)
+            // TODO: Need to double check token is still valid
+            dispatch(setToken(user))
             return true
         } else {
             return false
@@ -65,26 +74,27 @@ const useLogin = () => {
         body?: {},
         headers?: {},
     ): Promise<T> => {
-        if (user && user.token) {
-            headers = { ...(headers || {}), Authorization: `Bearer ${user.token}` }
+        if (token && token.token) {
+            headers = { ...(headers || {}), Authorization: `Bearer ${token.token}` }
         }
         return unauthedJson<T>(url, method, body, headers)
     }
 
     return {
-        user,
-        setUser,
+        token,
         logout,
         loginLocal,
         register,
         loginFromCache,
         json,
 
-        isLoggedIn: user.role !== 'guest',
-        isAdmin: Boolean(user.role === 'admin'),
+        isLockedOut: failedLoginAttempts >= maxFailedLoginAttempts,
+        isLoggedIn: token.role !== 'guest',
+        isAdmin: Boolean(token.role === 'admin'),
         wasUser: Boolean(localStorage.getItem('wasUser')),
 
-        tellIfUser: (userid: number) => user.userid === userid,
+        // Do I really need this?
+        tellIfUser: (userid: number) => token.userid === userid,
     }
 }
 
