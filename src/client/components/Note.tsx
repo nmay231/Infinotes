@@ -3,10 +3,10 @@
 import * as React from 'react'
 
 import usePress, { IPressHandler } from '../utils/usePress'
-import { useNotes } from '../utils/useNotes'
 
 import Float from './Float'
-import { NoteDraftContext } from './context/NoteDraftContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { revertDraft, newDraft, hideNote, editNote } from '../redux/actions/noteActions'
 
 export interface INoteProps extends Pick<INote, 'id' | 'offset' | 'username'> {
     children: string
@@ -18,6 +18,18 @@ const footerStyle = {
 }
 
 const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
+    const dispatch = useDispatch()
+    const token = useSelector((state: IState) => state.token)
+    const notes = useSelector((state: IState) => state.visibleNotes)
+    const draft = useSelector((state: IState) => state.draft)
+
+    const isEditable = (noteId: number) => {
+        return (
+            token.role === 'admin' ||
+            notes.filter((note) => note.id === noteId)[0].userid === token.userid
+        )
+    }
+
     const pressHandler: IPressHandler = ({ event }) => {
         if (
             event.isStationary &&
@@ -25,8 +37,7 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
             (event.type === 'double' || (event.origin === 'touch1' && event.type === 'hold'))
         ) {
             if (!draft) {
-                hideNote(id)
-                setDraft({ offset, initialContent: children, noteId: id })
+                dispatch(editNote(id))
             }
         } else if (event.isStationary && event.type !== 'start' && event.type !== 'end') {
             return 1
@@ -34,8 +45,6 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { isEditable, hideNote } = useNotes()
-    const [draft, setDraft] = React.useContext(NoteDraftContext)
 
     const minWidth = 2 + Math.round(children.length ** 0.5) + 'rem'
 

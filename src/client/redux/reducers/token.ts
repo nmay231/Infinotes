@@ -1,8 +1,16 @@
 /** @format */
 
-import { dummyUser } from '../../components/context/LoginContext'
 import { Reducer } from 'redux'
+
 import { userActions } from '../actions/userActions'
+
+export const dummyUser: IToken = {
+    token: undefined,
+    firstName: 'first',
+    lastName: 'last',
+    userid: -1,
+    role: 'guest',
+}
 
 const initialState = { ...dummyUser, failedAttempts: 0 }
 

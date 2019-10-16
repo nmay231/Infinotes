@@ -2,11 +2,11 @@
 
 import * as React from 'react'
 import { RouteComponentProps, withRouter } from 'react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import usePress, { IPressHandler } from '../utils/usePress'
 import useLogin from '../utils/useLogin'
-import { useNotes } from '../utils/useNotes'
-import { NoteDraftContext } from './context/NoteDraftContext'
+import { newDraft } from '../redux/actions/noteActions'
 
 import Float from './Float'
 import Note from './Note'
@@ -16,16 +16,22 @@ import SelectionMenu from './SelectionMenu'
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
+    const notes = useSelector((state: IState) => state.visibleNotes)
+    const draft = useSelector((state: IState) => state.draft)
+    const dispatch = useDispatch()
+
     const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap' && event.isStationary) {
             const float = document.getElementById('mainFloat')
-            createDraft({
-                offset: {
-                    x: event.startPos.x - float.offsetLeft,
-                    y: event.startPos.y - float.offsetTop,
-                },
-                initialContent: '',
-            })
+            dispatch(
+                newDraft({
+                    offset: {
+                        x: event.startPos.x - float.offsetLeft,
+                        y: event.startPos.y - float.offsetTop,
+                    },
+                    content: '',
+                }),
+            )
         } else if (event.type === 'move') {
             setPos((pos) => ({
                 x: pos.x + event.moveChange.x,
@@ -36,17 +42,15 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
 
     const { eventHandlers } = usePress(pressHandler)
     const { isLoggedIn } = useLogin()
-    const { notes } = useNotes()
-    const [draft, setDraft] = React.useContext(NoteDraftContext)
 
     const [pos, setPos] = React.useState<IPos>({ x: 0, y: 0 })
 
-    const createDraft = (draft: { offset: IPos; initialContent: string }) => {
-        if (!isLoggedIn) {
-            return history.push('/login')
-        }
-        setDraft(draft)
-    }
+    // const createDraft = (draft: { offset: IPos; initialContent: string }) => {
+    //     if (!isLoggedIn) {
+    //         return history.push('/login')
+    //     }
+    //     setDraft(draft)
+    // }
 
     React.useEffect(() => {
         if (!localStorage.getItem('fullscreen')) {
@@ -73,7 +77,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                             </Note>
                         )
                     })}
-                    {draft && <NoteDraft {...draft} />}
+                    {draft && <NoteDraft draft={draft} />}
                 </Float>
             </div>
             <SelectionMenu resetView={() => setPos({ x: 0, y: 0 })} />

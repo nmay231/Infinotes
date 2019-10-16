@@ -10,12 +10,14 @@ export const noteActions = {
     CHANGE_LOCAL_NOTE: 'CHANGE_LOCAL_NOTE',
 
     POST_NOTE: 'POST_NOTE',
+    PUT_NOTE: 'PUT_NOTE',
     GET_NOTE: 'GET_NOTE',
     DELETE_NOTE: 'DELETE_NOTE',
     FAILED_NOTE_REQUEST: 'FAILED_NOTE_REQUEST',
 
     NEW_DRAFT: 'NEW_DRAFT',
     EDIT_NOTE: 'EDIT_NOTE',
+    SAVE_DRAFT: 'SAVE_DRAFT',
     DISCARD_DRAFT: 'DISCARD_DRAFT',
     REVERT_DRAFT: 'REVERT_DRAFT_BACK_TO_NOTE',
 }
@@ -40,10 +42,10 @@ export const changeNote = (note: Pick<INote, 'id'> & Partial<INote>) => ({
     note,
 })
 
-const failedNoteRequest = (from: string, err: string, userMessage: string) => ({
+export const failedNoteRequest = (from: string, errMessage: string, userMessage: string) => ({
     type: noteActions.FAILED_NOTE_REQUEST,
     from,
-    err,
+    errMessage,
     userMessage,
 })
 
@@ -59,7 +61,7 @@ export const getNote = (
                 dispatch(addNote(note))
             }
         } catch (err) {
-            dispatch(failedNoteRequest('getNote', err, 'Failed to get note from server'))
+            dispatch(failedNoteRequest('getNote', err.message, 'Failed to get note from server'))
         }
     }
 }
@@ -71,47 +73,78 @@ export const postNote = (
     return async (dispatch, getState) => {
         try {
             dispatch({ type: noteActions.POST_NOTE })
-            const id = await jsonFunc<INote['id']>(NOTES_API, 'POST', note)
+            const { id } = await jsonFunc<Pick<INote, 'id'>>(NOTES_API, 'POST', note)
             const { userid } = getState().token
             // TODO: Change server side to send username in token
-            const username = await jsonFunc<INote['username']>(
+            const { username } = await jsonFunc<Pick<INote, 'username'>>(
                 join(USERS_API, `${userid}`, 'username'),
             )
             dispatch(addNote({ ...note, id, username, userid }))
         } catch (err) {
-            dispatch(failedNoteRequest('postNote', err, 'Failed to create new note'))
+            dispatch(failedNoteRequest('postNote', err.message, 'Failed to create new note'))
         }
     }
 }
 
-export const putNote = () => ({})
+export const putNote = (
+    note: Pick<INote, 'id'> & Partial<INote>,
+    jsonFunc: typeof unauthedJson,
+): ThunkAction<void, IState, [], Action> => {
+    return async (dispatch, getState) => {
+        try {
+            dispatch({ type: noteActions.PUT_NOTE, id: note.id })
+            await jsonFunc(join(NOTES_API, `${note.id}`), 'PUT', note)
+            let [oldNote] = getState().visibleNotes.filter((n) => n.id === note.id)
+            dispatch(hideNote(note.id))
+            dispatch(addNote({ ...oldNote, ...note }))
+        } catch (err) {
+            dispatch(failedNoteRequest('putNote', err.message, 'Failed to update note'))
+        }
+    }
+}
 
 export const deleteNote = (
     id: number,
     jsonFunc: typeof unauthedJson,
 ): ThunkAction<void, IState, [], Action> => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         try {
             dispatch({ type: noteActions.DELETE_NOTE, id })
             await jsonFunc(join(NOTES_API, `${id}`), 'DELETE')
             dispatch(hideNote(id))
         } catch (err) {
-            dispatch(failedNoteRequest('deleteNote', err, 'Failed to delete note'))
+            dispatch(failedNoteRequest('deleteNote', err.message, 'Failed to delete note'))
         }
     }
 }
 
-export const newDraft = (content: string = '', noteId?: number) => ({
+export const newDraft = (note: Partial<INote>) => ({
     type: noteActions.NEW_DRAFT,
-    content,
-    noteId,
+    content: note.content || '',
+    offset: note.offset || { x: 0, y: 0 },
+    noteId: note.id || undefined,
 })
 
 export const editNote = (id: number): ThunkAction<void, IState, [], Action> => {
     return async (dispatch, getState) => {
         let [note] = getState().visibleNotes.filter((note) => note.id === id)
         dispatch(hideNote(id))
-        dispatch(newDraft(note.content, note.id))
+        dispatch(newDraft(note))
+    }
+}
+
+export const saveDraft = (
+    draft: Pick<INote, 'content' | 'offset'>,
+    jsonFunc: typeof unauthedJson,
+): ThunkAction<void, IState, [], Action> => {
+    return async (dispatch, getState) => {
+        let { noteId } = getState().draft
+        dispatch({ type: noteActions.SAVE_DRAFT })
+        if (noteId) {
+            dispatch(putNote({ id: noteId, ...draft }, jsonFunc))
+        } else {
+            dispatch(postNote(draft, jsonFunc))
+        }
     }
 }
 
