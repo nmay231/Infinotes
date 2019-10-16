@@ -2,15 +2,24 @@
 
 import * as React from 'react'
 
-import { NotesContext } from '../components/context/NotesContext'
 import { NoteDraftContext } from '../components/context/NoteDraftContext'
 import { NOTES_API, join, USERS_API } from './apis'
 import useLogin from './useLogin'
+import { useSelector, useDispatch } from 'react-redux'
+import {
+    initNotes,
+    hideNote as hideNoteAction,
+    getNote,
+    postNote,
+    deleteNote,
+} from '../redux/actions/noteActions'
 
 export const useNotes = () => {
     const { json, token } = useLogin()
 
-    const [notes, setNotes] = React.useContext(NotesContext)
+    const notes = useSelector((state: IState) => state.visibleNotes)
+    const draft = useSelector((state: IState) => state.draft)
+    const dispatch = useDispatch()
 
     const fetchNotes = async (from: IPos = { x: 0, y: 0 }) => {
         try {
@@ -22,50 +31,28 @@ export const useNotes = () => {
                     ),
                 ),
             )
-            setNotes(rawNotes)
+            dispatch(initNotes(rawNotes))
         } catch (err) {
             console.error('Failed to retrieve notes from server')
         }
     }
 
-    const fetchNote = async (id: number) => {
-        try {
-            let rawNote = await json<INote>(join(NOTES_API, `${id}`))
-            rawNote.username = (await json<Pick<INote, 'username'>>(
-                join(USERS_API, `${rawNote.userid}`, 'username'),
-            )).username
-            setNotes([...notes, rawNote])
-        } catch (err) {
-            console.error(`Failed to update note: ${id}`)
-        }
-    }
+    const fetchNote = async (id: number) => dispatch(getNote(id))
 
-    const addNote = async (note: { content: string; offset: IPos }) => {
-        try {
-            await json(NOTES_API, 'POST', note)
-            fetchNotes()
-        } catch (err) {
-            console.error('Failed to post new note')
-        }
-    }
+    const addNote = async (note: Pick<INote, 'content' | 'offset'>) =>
+        dispatch(postNote(note, json))
 
-    const hideNote = async (id: number) => {
-        setNotes(notes.filter((note) => note.id !== id))
-    }
+    const hideNote = async (id: number) => dispatch(hideNoteAction(id))
 
     const updateNote = async (note: Pick<INote, 'id'> & Partial<INote>) => {
-        const { content, offset } = note
-        await json(join(NOTES_API, `${note.id}`), 'PUT', { content, offset })
-        fetchNote(note.id)
+        //TODO: update note
+        // const { content, offset } = note
+        // await json(join(NOTES_API, `${note.id}`), 'PUT', { content, offset })
+        // fetchNote(note.id)
     }
 
     const removeNote = async (id: number) => {
-        try {
-            await json(join(NOTES_API, `${id}`), 'DELETE')
-            fetchNotes()
-        } catch (err) {
-            console.error('Failed to delete note')
-        }
+        dispatch(deleteNote(id, json))
     }
 
     // TODO

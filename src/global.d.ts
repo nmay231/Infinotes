@@ -48,6 +48,12 @@ declare interface IUser {
 declare interface IState {
     token: IToken
     failedLoginAttempts: number
+    visibleNotes: INote[]
+    draft: {
+        content: string
+        offset: IPos
+        noteId?: number
+    }
 }
 
 // Express

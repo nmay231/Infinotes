@@ -8,18 +8,7 @@ import LoginListener from './LoginListener'
 import { PressProvider } from './PressContext'
 
 const GlobalContext: React.FC = ({ children }) => {
-    // Ah... look at that lovely pyramid of death
-    // Just wait until I get to learning Redux
-    return (
-        <LoginProvider>
-            <PressProvider>
-                <NotesProvider>
-                    <NoteDraftProvider>{children}</NoteDraftProvider>
-                </NotesProvider>
-            </PressProvider>
-            <LoginListener />
-        </LoginProvider>
-    )
+    return <PressProvider>{children}</PressProvider>
 }
 
 export default GlobalContext
