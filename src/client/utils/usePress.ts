@@ -76,6 +76,9 @@ const usePress = (handler: IPressHandler) => {
     const [canBeDouble, setCanBeDouble] = React.useState(false)
     const [holding, setHolding] = React.useState<OriginType | 'cancel'>(null)
 
+    const [timeoutId, setTimeoutId] = React.useState(null)
+    React.useEffect(() => () => clearTimeout(timeoutId))
+
     if (holding && holding !== 'cancel' && isStationary) {
         callHandlers({ isStationary, startPos, origin: holding, type: 'hold' })
         setHolding(null)
@@ -102,7 +105,9 @@ const usePress = (handler: IPressHandler) => {
             setCanBeDouble(false)
         }
 
-        setTimeout(() => setHolding((holding) => (holding === 'cancel' ? null : origin)), 700)
+        setTimeoutId(
+            setTimeout(() => setHolding((holding) => (holding === 'cancel' ? null : origin)), 700),
+        )
     }
 
     const onTouchMove = (e: React.TouchEvent) => {
@@ -165,7 +170,9 @@ const usePress = (handler: IPressHandler) => {
         setStartPos(newStartPos)
         setIsStationary(true)
         callHandlers({ isStationary: true, startPos: newStartPos, origin: 'mouse', type: 'start' })
-        setTimeout(() => setHolding((holding) => (holding === 'cancel' ? null : 'mouse')), 700)
+        setTimeoutId(
+            setTimeout(() => setHolding((holding) => (holding === 'cancel' ? null : 'mouse')), 700),
+        )
     }
 
     const onMouseMove = (e: React.MouseEvent) => {
