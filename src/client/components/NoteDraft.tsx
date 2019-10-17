@@ -11,7 +11,7 @@ import Float from './Float'
 import MoveIcon from './MoveIcon'
 
 interface INoteDraftProps {
-    draft: IState['draft']
+    draft: IReduxState['draft']
 }
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
@@ -45,7 +45,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
             if (draft.noteId) {
                 dispatch(discardDraft(json))
             } else {
-                dispatch(revertDraft())
+                dispatch(revertDraft(json))
             }
         } else {
             dispatch(saveDraft({ content, offset }, json))

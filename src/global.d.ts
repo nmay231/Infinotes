@@ -45,7 +45,7 @@ declare interface IUser {
 }
 
 // Redux state
-declare interface IState {
+declare interface IReduxState {
     token: IToken
     failedLoginAttempts: number
     visibleNotes: INote[]

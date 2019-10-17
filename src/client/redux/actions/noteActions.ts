@@ -1,7 +1,10 @@
 /** @format */
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
+
 import { unauthedJson, join, NOTES_API, USERS_API } from '../../utils/apis'
+
+type MyThunk<A extends Action = Action> = ThunkAction<void, IReduxState, [], A>
 
 export const noteActions = {
     INIT_NOTES: 'INIT_NOTES',
@@ -49,17 +52,24 @@ export const failedNoteRequest = (from: string, errMessage: string, userMessage:
     userMessage,
 })
 
-export const getNote = (
-    id: number,
-    jsonFunc: typeof unauthedJson = unauthedJson,
-): ThunkAction<void, IState, [], Action> => {
+export const getNote = (id: number, jsonFunc: typeof unauthedJson): MyThunk => {
     return async (dispatch) => {
         try {
             dispatch({ type: noteActions.GET_NOTE, id })
             let note = await jsonFunc<INote>(join(NOTES_API, `${id}`))
-            if (note) {
-                dispatch(addNote(note))
+            if (!note) {
+                return dispatch(
+                    failedNoteRequest(
+                        'getNote',
+                        'Note not sent from server',
+                        'Failed to get note from server',
+                    ),
+                )
             }
+            let { username } = await jsonFunc<Pick<INote, 'username'>>(
+                join(USERS_API, `${note.userid}`, 'username'),
+            )
+            dispatch(addNote({ ...note, username }))
         } catch (err) {
             dispatch(failedNoteRequest('getNote', err.message, 'Failed to get note from server'))
         }
@@ -69,10 +79,10 @@ export const getNote = (
 export const postNote = (
     note: Pick<INote, 'content' | 'offset'>,
     jsonFunc: typeof unauthedJson,
-): ThunkAction<void, IState, [], Action> => {
+): MyThunk => {
     return async (dispatch, getState) => {
         try {
-            dispatch({ type: noteActions.POST_NOTE })
+            dispatch({ type: noteActions.POST_NOTE, note })
             const { id } = await jsonFunc<Pick<INote, 'id'>>(NOTES_API, 'POST', note)
             const { userid } = getState().token
             // TODO: Change server side to send username in token
@@ -89,25 +99,20 @@ export const postNote = (
 export const putNote = (
     note: Pick<INote, 'id'> & Partial<INote>,
     jsonFunc: typeof unauthedJson,
-): ThunkAction<void, IState, [], Action> => {
-    return async (dispatch, getState) => {
+): MyThunk => {
+    return async (dispatch) => {
         try {
-            dispatch({ type: noteActions.PUT_NOTE, id: note.id })
+            dispatch({ type: noteActions.PUT_NOTE, note })
             await jsonFunc(join(NOTES_API, `${note.id}`), 'PUT', note)
-            let [oldNote] = getState().visibleNotes.filter((n) => n.id === note.id)
-            dispatch(hideNote(note.id))
-            dispatch(addNote({ ...oldNote, ...note }))
+            dispatch(getNote(note.id, jsonFunc))
         } catch (err) {
             dispatch(failedNoteRequest('putNote', err.message, 'Failed to update note'))
         }
     }
 }
 
-export const deleteNote = (
-    id: number,
-    jsonFunc: typeof unauthedJson,
-): ThunkAction<void, IState, [], Action> => {
-    return async (dispatch, getState) => {
+export const deleteNote = (id: number, jsonFunc: typeof unauthedJson): MyThunk => {
+    return async (dispatch) => {
         try {
             dispatch({ type: noteActions.DELETE_NOTE, id })
             await jsonFunc(join(NOTES_API, `${id}`), 'DELETE')
@@ -125,7 +130,7 @@ export const newDraft = (note: Partial<INote>) => ({
     noteId: note.id || undefined,
 })
 
-export const editNote = (id: number): ThunkAction<void, IState, [], Action> => {
+export const editNote = (id: number): MyThunk => {
     return async (dispatch, getState) => {
         let [note] = getState().visibleNotes.filter((note) => note.id === id)
         dispatch(hideNote(id))
@@ -136,7 +141,7 @@ export const editNote = (id: number): ThunkAction<void, IState, [], Action> => {
 export const saveDraft = (
     draft: Pick<INote, 'content' | 'offset'>,
     jsonFunc: typeof unauthedJson,
-): ThunkAction<void, IState, [], Action> => {
+): MyThunk => {
     return async (dispatch, getState) => {
         let { noteId } = getState().draft
         dispatch({ type: noteActions.SAVE_DRAFT })
@@ -148,9 +153,7 @@ export const saveDraft = (
     }
 }
 
-export const discardDraft = (
-    jsonFunc: typeof unauthedJson,
-): ThunkAction<void, IState, [], Action> => {
+export const discardDraft = (jsonFunc: typeof unauthedJson): MyThunk => {
     return (dispatch, getState) => {
         let { noteId } = getState().draft
         dispatch({ type: noteActions.DISCARD_DRAFT })
@@ -160,10 +163,10 @@ export const discardDraft = (
     }
 }
 
-export const revertDraft = (): ThunkAction<void, IState, [], Action> => {
+export const revertDraft = (jsonFunc: typeof unauthedJson): MyThunk => {
     return async (dispatch, getState) => {
         let { noteId } = getState().draft
         dispatch({ type: noteActions.REVERT_DRAFT })
-        dispatch(getNote(noteId))
+        dispatch(getNote(noteId, jsonFunc))
     }
 }

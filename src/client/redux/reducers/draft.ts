@@ -1,9 +1,10 @@
 /** @format */
 
 import { Reducer } from 'redux'
+
 import { noteActions } from '../actions/noteActions'
 
-const draft: Reducer<IState['draft']> = (state = null, action) => {
+const draft: Reducer<IReduxState['draft']> = (state = null, action) => {
     switch (action.type) {
         case noteActions.NEW_DRAFT:
             return {

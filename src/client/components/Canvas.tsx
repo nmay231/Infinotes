@@ -16,22 +16,26 @@ import SelectionMenu from './SelectionMenu'
 interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
-    const notes = useSelector((state: IState) => state.visibleNotes)
-    const draft = useSelector((state: IState) => state.draft)
+    const notes = useSelector((state: IReduxState) => state.visibleNotes)
+    const draft = useSelector((state: IReduxState) => state.draft)
     const dispatch = useDispatch()
 
     const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap' && event.isStationary) {
-            const float = document.getElementById('mainFloat')
-            dispatch(
-                newDraft({
-                    offset: {
-                        x: event.startPos.x - float.offsetLeft,
-                        y: event.startPos.y - float.offsetTop,
-                    },
-                    content: '',
-                }),
-            )
+            if (isLoggedIn) {
+                const float = document.getElementById('mainFloat')
+                dispatch(
+                    newDraft({
+                        offset: {
+                            x: event.startPos.x - float.offsetLeft,
+                            y: event.startPos.y - float.offsetTop,
+                        },
+                        content: '',
+                    }),
+                )
+            } else {
+                return history.push(wasUser ? '/login' : '/register')
+            }
         } else if (event.type === 'move') {
             setPos((pos) => ({
                 x: pos.x + event.moveChange.x,
@@ -41,16 +45,9 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { isLoggedIn } = useLogin()
+    const { isLoggedIn, wasUser } = useLogin()
 
     const [pos, setPos] = React.useState<IPos>({ x: 0, y: 0 })
-
-    // const createDraft = (draft: { offset: IPos; initialContent: string }) => {
-    //     if (!isLoggedIn) {
-    //         return history.push('/login')
-    //     }
-    //     setDraft(draft)
-    // }
 
     React.useEffect(() => {
         if (!localStorage.getItem('fullscreen')) {

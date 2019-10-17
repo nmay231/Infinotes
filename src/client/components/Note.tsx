@@ -6,7 +6,7 @@ import usePress, { IPressHandler } from '../utils/usePress'
 
 import Float from './Float'
 import { useDispatch, useSelector } from 'react-redux'
-import { revertDraft, newDraft, hideNote, editNote } from '../redux/actions/noteActions'
+import { editNote } from '../redux/actions/noteActions'
 
 export interface INoteProps extends Pick<INote, 'id' | 'offset' | 'username'> {
     children: string
@@ -19,16 +19,13 @@ const footerStyle = {
 
 const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     const dispatch = useDispatch()
-    const token = useSelector((state: IState) => state.token)
-    const notes = useSelector((state: IState) => state.visibleNotes)
-    const draft = useSelector((state: IState) => state.draft)
+    const token = useSelector((state: IReduxState) => state.token)
+    const notes = useSelector((state: IReduxState) => state.visibleNotes)
+    const draft = useSelector((state: IReduxState) => state.draft)
 
-    const isEditable = (noteId: number) => {
-        return (
-            token.role === 'admin' ||
-            notes.filter((note) => note.id === noteId)[0].userid === token.userid
-        )
-    }
+    const isEditable = (noteId: number) =>
+        token.role === 'admin' ||
+        notes.filter((note) => note.id === noteId)[0].userid === token.userid
 
     const pressHandler: IPressHandler = ({ event }) => {
         if (

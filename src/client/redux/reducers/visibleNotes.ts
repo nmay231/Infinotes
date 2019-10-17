@@ -1,9 +1,10 @@
 /** @format */
 
 import { Reducer } from 'redux'
+
 import { noteActions } from '../actions/noteActions'
 
-const visibleNotes: Reducer<IState['visibleNotes']> = (state = [], action) => {
+const visibleNotes: Reducer<IReduxState['visibleNotes']> = (state = [], action) => {
     switch (action.type) {
         case noteActions.INIT_NOTES:
             return action.notes

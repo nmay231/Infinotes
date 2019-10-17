@@ -10,8 +10,8 @@ import { logout as logoutAction, setToken, failLogin } from '../redux/actions/us
 const maxFailedLoginAttempts = 5
 
 const useLogin = () => {
-    const token = useSelector((state: IState) => state.token)
-    const failedLoginAttempts = useSelector((state: IState) => state.failedLoginAttempts)
+    const token = useSelector((state: IReduxState) => state.token)
+    const failedLoginAttempts = useSelector((state: IReduxState) => state.failedLoginAttempts)
     const dispatch = useDispatch()
 
     const logout = () => {

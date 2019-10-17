@@ -14,7 +14,7 @@ export const dummyUser: IToken = {
 
 const initialState = { ...dummyUser, failedAttempts: 0 }
 
-const token: Reducer<IState['token']> = (state = initialState, action) => {
+const token: Reducer<IReduxState['token']> = (state = initialState, action) => {
     switch (action.type) {
         case userActions.LOGOUT:
             return initialState
