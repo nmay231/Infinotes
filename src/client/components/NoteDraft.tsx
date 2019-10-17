@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useDispatch } from 'react-redux'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import useLogin from '../utils/useLogin'
 import usePress, { IPressHandler } from '../utils/usePress'
@@ -9,6 +10,7 @@ import { discardDraft, revertDraft, saveDraft } from '../redux/actions/noteActio
 
 import Float from './Float'
 import MoveIcon from './MoveIcon'
+import StyledButton from './commons/StyledButton'
 
 interface INoteDraftProps {
     draft: IReduxState['draft']
@@ -20,7 +22,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
             document.getElementById('noteDraftInput').focus()
         }
         if (event.type !== 'move') {
-            return 1
+            return Infinity
         }
     }
 
@@ -28,8 +30,8 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     const { json } = useLogin()
     const dispatch = useDispatch()
 
-    const [offset, setOffset] = React.useState(draft && draft.offset)
-    const [content, setContent] = React.useState(draft && draft.content)
+    const [offset, setOffset] = React.useState(draft.offset)
+    const [content, setContent] = React.useState(draft.content)
 
     React.useEffect(() => {
         try {
@@ -37,22 +39,9 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
         } catch (err) {}
     }, [offset])
 
-    const handleSubmit: React.FormEventHandler = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        // TODO: Change submit button to be disabled if content.length === 0
-        if (!content.length) {
-            if (draft.noteId) {
-                dispatch(discardDraft(json))
-            } else {
-                dispatch(revertDraft(json))
-            }
-        } else {
-            dispatch(saveDraft({ content, offset }, json))
-        }
-    }
-
-    const deleteSelf = () => dispatch(discardDraft(json))
+    const save = () => dispatch(saveDraft({ content, offset }, json))
+    const revert = () => dispatch(revertDraft(json))
+    const discard = () => dispatch(discardDraft(json))
 
     const handleChange: React.ChangeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
@@ -65,7 +54,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key.toLowerCase() === 'enter') {
             e.preventDefault()
-            handleSubmit(e)
+            save()
         }
     }
 
@@ -77,7 +66,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
                 className="d-flex flex-column justify-content-center"
                 {...eventHandlers}
             >
-                <form className="card p-2 mb-1" onSubmit={handleSubmit}>
+                <form className="card p-2 mb-1" onSubmit={save}>
                     <textarea
                         rows={4}
                         id="noteDraftInput"
@@ -89,21 +78,17 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
                     />
                 </form>
                 <div className="d-flex justify-content-center">
-                    <button
-                        className="btn btn-success"
-                        onClick={handleSubmit}
-                        onTouchEnd={handleSubmit}
-                    >
-                        ✓
-                    </button>
-                    <button
-                        role="button"
-                        className="btn btn-danger ml-2"
-                        onClick={deleteSelf}
-                        onTouchEnd={deleteSelf}
-                    >
-                        &times;
-                    </button>
+                    <StyledButton btnStyle="success" disabled={!content.length} onPress={save}>
+                        <FontAwesomeIcon icon="check" />
+                    </StyledButton>
+                    {draft.noteId && (
+                        <StyledButton btnStyle="primary" className="ml-2" onPress={revert}>
+                            <FontAwesomeIcon icon="undo-alt" />
+                        </StyledButton>
+                    )}
+                    <StyledButton btnStyle="danger" className="ml-2" onPress={discard}>
+                        <FontAwesomeIcon icon="trash-alt" />
+                    </StyledButton>
                 </div>
             </div>
         </Float>

@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { withRouter, RouteComponentProps } from 'react-router'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import useLogin from '../utils/useLogin'
 
@@ -28,7 +29,7 @@ const SelectionMenu: React.FC<ISelectionMenuProps> = ({ resetView, history }) =>
                 style={{ top: '50%' }}
             >
                 <div className="btn btn-secondary" onClick={() => setVisible(true)}>
-                    {'<'}
+                    <FontAwesomeIcon icon="bars" fixedWidth />
                 </div>
             </div>
         )
@@ -44,7 +45,7 @@ const SelectionMenu: React.FC<ISelectionMenuProps> = ({ resetView, history }) =>
                     className="btn btn-secondary align-self-start align-self-md-end order-md-0 order-12"
                     onClick={() => setVisible(false)}
                 >
-                    {'>'}
+                    <FontAwesomeIcon icon="angle-right" fixedWidth />
                 </div>
                 {document.fullscreenEnabled && (
                     <div className="btn btn-primary my-2" onClick={handleFullscreen}>
