@@ -18,7 +18,7 @@ const StyledButton: React.FC<IControlledButtonProps> = ({
         if (event.type === 'tap' && onPress) {
             onPress()
         }
-        return 5
+        return Infinity
     }
 
     const { eventHandlers } = usePress(ButtonPressHandler)
