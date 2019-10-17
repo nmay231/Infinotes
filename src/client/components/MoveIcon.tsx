@@ -1,14 +1,11 @@
 /** @format */
 
 import * as React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import usePress, { IPressHandler } from '../utils/usePress'
-import Float from './Float'
 
-const offset: IPos = {
-    x: -35,
-    y: -40,
-}
+const style = { marginLeft: -35, marginTop: -40 }
 
 interface IMoveIconProps {
     move: (distance: IPos) => void
@@ -25,9 +22,9 @@ const MoveIcon: React.FC<IMoveIconProps> = ({ move }) => {
     const { eventHandlers } = usePress(handler)
 
     return (
-        <div className="position-absolute" style={{ marginLeft: -35, marginTop: -40 }}>
+        <div className="position-absolute" style={style}>
             <div {...eventHandlers} className="card p-2 pointer no-select">
-                M
+                <FontAwesomeIcon icon="expand-arrows-alt" />
             </div>
         </div>
     )

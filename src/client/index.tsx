@@ -9,6 +9,7 @@ import { render } from 'react-dom'
 
 import App from './App'
 import './scss/app'
+import './utils/initializeIcons'
 import reducers from './redux/reducers'
 
 const store = createStore(reducers, composeWithDevTools(applyMiddleware(thunk)))
