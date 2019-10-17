@@ -1,19 +1,20 @@
 /** @format */
 
 import * as React from 'react'
+import { useDispatch } from 'react-redux'
 
-import { useNotes } from '../utils/useNotes'
+import useLogin from '../utils/useLogin'
 import usePress, { IPressHandler } from '../utils/usePress'
-import { NoteDraftContext } from './context/NoteDraftContext'
+import { discardDraft, revertDraft, saveDraft } from '../redux/actions/noteActions'
 
 import Float from './Float'
 import MoveIcon from './MoveIcon'
 
 interface INoteDraftProps {
-    offset: IPos
+    draft: IReduxState['draft']
 }
 
-const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
+const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap') {
             document.getElementById('noteDraftInput').focus()
@@ -24,47 +25,42 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { addNote, updateNote, removeNote } = useNotes()
-    // Using context here causes a render when it's unmounted
-    // Will be fixed with the introduction of redux
-    const [draft, setDraft] = React.useContext(NoteDraftContext)
+    const { json } = useLogin()
+    const dispatch = useDispatch()
 
-    const [offset_, setOffset_] = React.useState(offset)
-    const [content, setContent] = React.useState(draft.initialContent)
+    const [offset, setOffset] = React.useState(draft && draft.offset)
+    const [content, setContent] = React.useState(draft && draft.content)
+
+    React.useEffect(() => {
+        try {
+            document.getElementById('noteDraftInput').focus()
+        } catch (err) {}
+    }, [offset])
 
     const handleSubmit: React.FormEventHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        if (!content.length && draft.noteId) {
-            removeNote(draft.noteId)
-        } else if (content.length) {
+        // TODO: Change submit button to be disabled if content.length === 0
+        if (!content.length) {
             if (draft.noteId) {
-                updateNote({ id: draft.noteId, content, offset: offset_ })
+                dispatch(discardDraft(json))
             } else {
-                addNote({ offset: offset_, content })
+                dispatch(revertDraft(json))
             }
+        } else {
+            dispatch(saveDraft({ content, offset }, json))
         }
-        setDraft(null)
     }
 
-    const deleteSelf = () => {
-        if (draft.noteId) {
-            removeNote(draft.noteId)
-        }
-        setDraft(null)
-    }
+    const deleteSelf = () => dispatch(discardDraft(json))
 
     const handleChange: React.ChangeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
         setContent(e.target.value)
     }
 
-    React.useEffect(() => {
-        document.getElementById('noteDraftInput').focus()
-    }, [offset])
-
     const moveDraft = (distance: IPos) =>
-        setOffset_((old) => ({ x: old.x + distance.x, y: old.y + distance.y }))
+        setOffset((old) => ({ x: old.x + distance.x, y: old.y + distance.y }))
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key.toLowerCase() === 'enter') {
@@ -74,7 +70,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ offset }) => {
     }
 
     return (
-        <Float offset={offset_} centerX>
+        <Float offset={offset} centerX>
             <MoveIcon move={moveDraft} />
             <div
                 id="noteDraft"

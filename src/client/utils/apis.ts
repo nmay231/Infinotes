@@ -35,7 +35,7 @@ export const unauthedJson = async <T>(
         headers,
     })).data
 
-    if ((method === 'GET' || method === 'get') && result) {
+    if (result) {
         return result
     }
 }
