@@ -44,6 +44,19 @@ declare interface IUser {
     _created: Date
 }
 
+// Redux state
+declare interface IReduxState {
+    token: IToken
+    failedLoginAttempts: number
+    visibleNotes: INote[]
+    draft: {
+        content: string
+        offset: IPos
+        noteId?: number
+    }
+}
+
+// Express
 declare namespace Express {
     interface User extends IUser {}
 }
