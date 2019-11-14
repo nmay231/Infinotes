@@ -30,6 +30,7 @@ const serverConfig = {
         __dirname: false,
     },
     externals: [nodeExternals()],
+    devtool: 'cheap-eval-source-map',
 }
 
 const clientConfig = {

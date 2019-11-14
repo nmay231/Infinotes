@@ -9,6 +9,7 @@ import * as path from 'path'
 
 import apiRouter from './routes'
 import { graphqlServer } from './graphql'
+import { BearerStrategy } from './middlewares/authCheckpoints'
 import './middlewares'
 
 const app = express()
@@ -18,6 +19,7 @@ app.use(cors())
 app.use(helmet())
 
 app.use(express.static('public'))
+app.use('/api/graphql', BearerStrategy())
 graphqlServer.applyMiddleware({ app, path: '/api/graphql' })
 app.use(apiRouter)
 

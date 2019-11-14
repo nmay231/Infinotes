@@ -8,7 +8,9 @@
         "watch:server": "nodemon -r dotenv/config dist/server.js dotenv_config_path='config/.env'",
         "dev": "npm-run-all --parallel watch:*",
         "start": "node dist/server.js",
-        "heroku-postbuild": "npx webpack"
+        "heroku-postbuild": "npx webpack",
+        "debug": "npm-run-all --parallel watch:build debug:server",
+        "debug:server": "nodemon --inspect -r dotenv/config dist/server.js dotenv_config_path='config/.env'"
     },
     "keywords": [],
     "author": "",
