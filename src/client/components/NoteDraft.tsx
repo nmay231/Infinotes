@@ -11,6 +11,7 @@ import { discardDraft, revertDraft, saveDraft } from '../redux/actions/noteActio
 import Float from './Float'
 import MoveIcon from './MoveIcon'
 import StyledButton from './commons/StyledButton'
+import { useMutation, editNote as editNoteMutation } from '../utils/graphql'
 
 interface INoteDraftProps {
     draft: IReduxState['draft']
@@ -27,6 +28,9 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
+    const [editNote, { data }] = useMutation(editNoteMutation('content', 'offset'), {
+        refetchQueries: ['grabNote', 'grabNotes'],
+    })
     const { json } = useLogin()
     const dispatch = useDispatch()
 
@@ -39,7 +43,8 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
         } catch (err) {}
     }, [offset])
 
-    const save = () => dispatch(saveDraft({ content, offset }, json))
+    // const save = () => dispatch(saveDraft({ content, offset }, json))
+    const save = () => editNote({ variables: { content, offset } })
     const revert = () => dispatch(revertDraft(json))
     const discard = () => dispatch(discardDraft(json))
 

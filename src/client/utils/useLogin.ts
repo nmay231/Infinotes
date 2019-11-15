@@ -1,7 +1,9 @@
 /** @format */
 
+import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import Axios from 'axios'
+import ApolloClient from 'apollo-boost'
 import { Method } from 'axios'
 
 import { LOGIN_ENDPOINT, REGISTER_ENDPOINT, unauthedJson } from './apis'
@@ -92,9 +94,6 @@ const useLogin = () => {
         isLoggedIn: token.role !== 'guest',
         isAdmin: Boolean(token.role === 'admin'),
         wasUser: Boolean(localStorage.getItem('wasUser')),
-
-        // Do I really need this?
-        tellIfUser: (userid: number) => token.userid === userid,
     }
 }
 

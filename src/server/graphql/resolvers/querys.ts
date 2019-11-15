@@ -32,7 +32,7 @@ export const querys = {
                 try {
                     const [note] = await knex('Notes')
                         .where({ id })
-                        .select('id', 'content', 'posx', 'posy')
+                        .select()
                     resolve(note)
                 } catch (err) {
                     console.error(err)

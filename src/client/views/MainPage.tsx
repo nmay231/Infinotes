@@ -3,34 +3,29 @@
 import * as React from 'react'
 import { useDispatch } from 'react-redux'
 
-import useLogin from '../utils/useLogin'
-import { NOTES_API, USERS_API, join } from '../utils/apis'
+import { useQuery, grabNotes, useMutation } from '../utils/graphql'
 import { initNotes, failedNoteRequest } from '../redux/actions/noteActions'
 
 import { PressProvider } from '../components/context/PressContext'
 import Canvas from '../components/Canvas'
 
 const MainPage: React.FC = () => {
-    const { json } = useLogin()
     const dispatch = useDispatch()
+    const { loading, data, error } = useQuery<{ notes: INote[] }>(
+        grabNotes(null, 'id', 'content', 'offset', { user: ['username'] }),
+    )
 
     React.useEffect(() => {
-        ;(async () => {
-            try {
-                let rawNotes = await json<INote[]>(NOTES_API)
-                rawNotes = await Promise.all<INote>(
-                    rawNotes.map((note) =>
-                        json<{ username: string }>(
-                            join(USERS_API, `${note.userid}`, 'username'),
-                        ).then(({ username }) => Promise.resolve({ ...note, username })),
-                    ),
-                )
-                dispatch(initNotes(rawNotes))
-            } catch (err) {
-                dispatch(failedNoteRequest('MainPage render', err.message, 'Failed to load notes'))
-            }
-        })()
-    }, [])
+        if (error) {
+            dispatch(failedNoteRequest('MainPage render', error.message, 'Failed to load notes'))
+        } else if (!loading) {
+            dispatch(
+                initNotes(
+                    data.notes.map((note) => ({ ...note, username: (note as any).user.username })),
+                ),
+            )
+        }
+    }, [loading, data, error])
 
     return (
         <PressProvider>
