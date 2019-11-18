@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import Axios from 'axios'
-import ApolloClient from 'apollo-boost'
+import { ApolloClient } from 'apollo-client'
 import { Method } from 'axios'
 
 import { LOGIN_ENDPOINT, REGISTER_ENDPOINT, unauthedJson } from './apis'

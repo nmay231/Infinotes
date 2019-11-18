@@ -13,6 +13,7 @@ declare interface INote {
     id?: number
     content: string
     offset: IPos
+    user?: IUser
     username: string
     userid: number
 }
@@ -41,6 +42,7 @@ declare interface IUser {
     firstName: string
     lastName: string
     numberOfNotes: number
+    notes?: INote[]
     _created: Date
 }
 

@@ -1,68 +1,54 @@
 /** @format */
 
-import ApolloClient, { gql } from 'apollo-boost'
-import fetch from 'isomorphic-fetch'
+import gql from 'graphql-tag'
 
-export const tokenHolder: { token: string } = {
-    token: null,
-}
+export { tokenHolder, client } from './graphql-client'
+export { useQuery, useMutation } from '@apollo/react-hooks'
 
-const client = new ApolloClient({
-    uri: '/api/graphql',
-    fetch,
-    request: (operation) => {
-        operation.setContext({
-            headers: {
-                authorization: tokenHolder.token ? `Bearer ${tokenHolder.token}` : undefined,
-            },
-        })
-    },
-})
+type TField<T> = (keyof T) | Partial<{ [K in keyof T]?: TField<T[K]>[] }>
 
-type TField<T extends string> = T | { [key: string]: TField<string>[] }
-
-const formatField = <T extends string>(field: TField<T>) => {
-    if (typeof field === 'string') {
-        return field
-    } else {
-        let formatted = ''
-        for (let sub in field) {
-            formatted += `${sub} {
-                ${field[sub].map((sub) => formatField(sub)).join(',')}
-            }`
+const formatField = <T>(main: string, fields: TField<T>[]) => {
+    let formattedFields = main + '{'
+    for (let field of fields) {
+        if (typeof field !== 'object') {
+            formattedFields += field + ','
+        } else {
+            for (let sub in field) {
+                formattedFields += formatField(sub, field[sub]) + ','
+            }
         }
-        return formatted
     }
+    return formattedFields + '}'
 }
 
-export const grabNote = (id: number, ...fields: TField<keyof INote>[]) =>
-    gql`query grabNote{${formatField({ [`note(id: ${id})`]: fields })}}`
+export const grabNote = (id: number | string, ...fields: TField<INote>[]) =>
+    gql`query grabNote{${formatField(`note(id: ${id})`, fields)}}`
 
-export const grabNotes = (ids?: number, ...fields: TField<keyof INote>[]) =>
-    gql`query grabNotes{${formatField({ [`notes${ids ? `(ids: ${ids})` : ''}`]: fields })}}`
+export const grabNotes = (ids?: number, ...fields: TField<INote>[]) =>
+    gql`query grabNotes{${formatField(ids ? `notes(ids: ${ids})` : 'notes', fields)}}`
 
-export const grabUser = (id: number, ...fields: TField<keyof IUser>[]) =>
-    gql`query grabUser{${formatField({ [`user(id: ${id})`]: fields })}}`
+export const grabUser = (id: number, ...fields: TField<IUser>[]) =>
+    gql`query grabUser{${formatField(`user(id: ${id})`, fields)}}`
 
-export const grabThisUser = (...fields: TField<keyof IUser>[]) =>
-    gql`query grabThisUser{${formatField({ [`thisUser`]: fields })}}`
+export const grabThisUser = (...fields: TField<IUser>[]) =>
+    gql`query grabThisUser{${formatField(`thisUser`, fields)}}`
 
-export const addNote = (...fields: TField<keyof INote>[]) =>
+export const addNote = (...fields: TField<INote>[]) =>
     gql`mutation addNote($content: String!, $offset: Position!) {
-        ${formatField({ ['addNote(content: $content, offset: $offset)']: fields })}
+        ${formatField('addNote(content: $content, offset: $offset)', fields)}
     }`
 
-export const editNote = (...fields: TField<keyof INote>[]) =>
+export const editNote = (...fields: TField<INote>[]) =>
     gql`mutation addNote($content: String!, $offset: Position!) {
-        ${formatField({ ['addNote(content: $content, offset: $offset)']: fields })}
+        ${formatField('addNote(content: $content, offset: $offset)', fields)}
     }`
-export const deleteNote = (...fields: TField<keyof INote>[]) =>
+export const deleteNote = (...fields: TField<INote>[]) =>
     gql`mutation addNote($content: String!, $offset: Position!) {
-        ${formatField({ ['addNote(content: $content, offset: $offset)']: fields })}
+        ${formatField('addNote(content: $content, offset: $offset)', fields)}
     }`
 
 // editNote(id: ID!, content: String, offset: Position): Note!
 // deleteNote(id: ID!): Note
 
-export default client
-export { useQuery, useMutation } from '@apollo/react-hooks'
+export const fragment = <T>(type: string, ...fields: TField<T>[]) =>
+    gql`{${formatField(`fragment update${type} on ${type}`, fields)}}`
