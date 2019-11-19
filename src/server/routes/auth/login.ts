@@ -3,6 +3,7 @@
 import { Router } from 'express'
 
 import { RecoverToken, CreateToken } from '../../utils/security/tokens'
+import { ComparePassword } from '../../utils/security/passwords'
 import knextion from '../../db'
 // Users(id, username, role, hash, firstName, lastName, numberOfNotes, _created)
 
@@ -14,6 +15,9 @@ router.post('/', async (req, res) => {
         let [user] = await knextion('Users')
             .where({ username })
             .select<IUser[]>()
+        if (!ComparePassword(password, user.hash)) {
+            return res.status(401).send('Invalid login credentials')
+        }
         let token = (await RecoverToken(user.id)) || (await CreateToken({ userid: user.id }))
         res.status(200).json({
             userid: user.id,
