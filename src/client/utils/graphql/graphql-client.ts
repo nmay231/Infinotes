@@ -1,15 +1,12 @@
 /** @format */
 
 import { ApolloClient } from 'apollo-client'
-import { InMemoryCache } from 'apollo-cache-inmemory'
+import { InMemoryCache, defaultDataIdFromObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import { ApolloLink, Observable, Operation } from 'apollo-link'
-
 import fetch from 'isomorphic-fetch'
 
-export const tokenHolder: { token: string } = {
-    token: null,
-}
+import { tokenHolder } from '../useLogin'
 
 const cache = new InMemoryCache()
 

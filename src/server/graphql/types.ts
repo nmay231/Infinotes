@@ -11,11 +11,17 @@ const typeDefs = gql`
         notes(ids: [ID!]): [Note!]!
         user(id: ID!): User
         thisUser: User
+        draft(id: ID!): Draft!
+        drafts: [Draft!]!
     }
     type Mutation {
         addNote(content: String!, offset: Position!): Note!
         editNote(id: ID!, content: String, offset: Position): Note!
         deleteNote(id: ID!): Note
+        noteToDraft(noteId: ID!): Draft!
+        newDraft(content: String!, offset: Position!): Draft!
+        updateDraft(id: ID!, content: String, offset: Position): Draft!
+        deleteDraft(id: ID!, saveToNote: Boolean!): Draft
     }
     type User {
         id: ID!
@@ -24,11 +30,19 @@ const typeDefs = gql`
         firstName: String!
         lastName: String
         fullName: String!
+        notes: [Note!]!
         numberOfNotes: Int!
         _created: DateTime!
     }
     type Note {
         id: ID!
+        content: String!
+        offset: Position!
+        user: User!
+    }
+    type Draft {
+        id: ID!
+        noteId: ID
         content: String!
         offset: Position!
         user: User!

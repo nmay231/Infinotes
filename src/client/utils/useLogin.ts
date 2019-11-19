@@ -1,38 +1,40 @@
 /** @format */
 
-import { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import Axios from 'axios'
-import { ApolloClient } from 'apollo-client'
-import { Method } from 'axios'
+const emptyToken: IToken = {
+    token: null,
+    userid: -1,
+    firstName: null,
+    lastName: null,
+    role: 'guest',
+}
 
-import { LOGIN_ENDPOINT, REGISTER_ENDPOINT, unauthedJson } from './apis'
-import { logout as logoutAction, setToken, failLogin } from '../redux/actions/userActions'
+export const tokenHolder: IToken = { ...emptyToken }
 
-const maxFailedLoginAttempts = 5
+export const setToken = (token: Partial<IToken>) => {
+    Object.assign(tokenHolder, token)
+    localStorage.setItem('token', JSON.stringify(token))
+    localStorage.setItem('wasUser', 'yes')
+}
+
+const LOGIN_ENDPOINT = '/auth/login'
+const REGISTER_ENDPOINT = '/auth/register'
 
 const useLogin = () => {
-    const token = useSelector((state: IReduxState) => state.token)
-    const failedLoginAttempts = useSelector((state: IReduxState) => state.failedLoginAttempts)
-    const dispatch = useDispatch()
-
     const logout = () => {
-        dispatch(logoutAction())
-        localStorage.removeItem('user')
+        Object.assign(tokenHolder, emptyToken)
+        localStorage.removeItem('token')
     }
-
     const loginLocal = async (username: string, password: string) => {
-        if (failedLoginAttempts >= maxFailedLoginAttempts) {
-            return false
-        }
         try {
-            let user = (await Axios.post<IToken>(LOGIN_ENDPOINT, { username, password })).data
-            dispatch(setToken(user))
-            localStorage.setItem('user', JSON.stringify(user))
-            localStorage.setItem('wasUser', 'yes')
+            let token: IToken = await fetch(LOGIN_ENDPOINT, {
+                method: 'POST',
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            }).then((res) => res.json())
+            setToken(token)
             return true
         } catch (err) {
-            dispatch(failLogin())
             return false
         }
     }
@@ -44,15 +46,15 @@ const useLogin = () => {
         password: string,
     ) => {
         try {
-            let user = (await Axios.post<IToken>(REGISTER_ENDPOINT, {
-                firstName,
-                lastName,
-                username,
-                password,
-            })).data
-            dispatch(setToken(user))
-            localStorage.setItem('user', JSON.stringify(user))
-            localStorage.setItem('wasUser', 'yes')
+            let token: IToken = await fetch(REGISTER_ENDPOINT, {
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    username,
+                    password,
+                }),
+            }).then((res) => res.json())
+            setToken(token)
             return true
         } catch (err) {
             return false
@@ -60,39 +62,22 @@ const useLogin = () => {
     }
 
     const loginFromCache = () => {
-        let user: IToken = JSON.parse(localStorage.getItem('user'))
-        if (user) {
-            // TODO: Need to double check token is still valid
-            dispatch(setToken(user))
+        const token: IToken = JSON.parse(localStorage.getItem('token'))
+        if (token) {
+            Object.assign(tokenHolder, token)
             return true
-        } else {
-            return false
         }
-    }
-
-    const json = async <T>(
-        url: string,
-        method: Method = 'GET',
-        body?: {},
-        headers?: {},
-    ): Promise<T> => {
-        if (token && token.token) {
-            headers = { ...(headers || {}), Authorization: `Bearer ${token.token}` }
-        }
-        return unauthedJson<T>(url, method, body, headers)
+        return false
     }
 
     return {
-        token,
         logout,
         loginLocal,
         register,
         loginFromCache,
-        json,
 
-        isLockedOut: failedLoginAttempts >= maxFailedLoginAttempts,
-        isLoggedIn: token.role !== 'guest',
-        isAdmin: Boolean(token.role === 'admin'),
+        isLoggedIn: tokenHolder.role !== 'guest',
+        isAdmin: Boolean(tokenHolder.role === 'admin'),
         wasUser: Boolean(localStorage.getItem('wasUser')),
     }
 }

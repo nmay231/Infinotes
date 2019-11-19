@@ -7,7 +7,7 @@ import { ApolloProvider } from '@apollo/react-hooks'
 import LoginPage from './views/LoginPage'
 import MainPage from './views/MainPage'
 import useLogin from './utils/useLogin'
-import { client } from './utils/graphql'
+import { client } from './utils/graphql/graphql-client'
 
 const App: React.FC = () => {
     const { loginFromCache } = useLogin()

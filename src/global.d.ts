@@ -10,12 +10,30 @@ declare interface IPos {
 }
 
 declare interface INote {
-    id?: number
+    id: number
     content: string
     offset: IPos
-    user?: IUser
+    user: IUser
+}
+
+declare interface IDraft {
+    id: number
+    noteId?: number
+    content: string
+    offset: IPos
+    user: IUser
+}
+
+declare interface IUser {
+    id: number
     username: string
-    userid: number
+    role: 'guest' | 'user' | 'admin'
+    firstName: string
+    lastName?: string
+    fullName: string
+    notes: INote[]
+    numberOfNotes: number
+    _created: Date
 }
 
 // Auth
@@ -26,35 +44,39 @@ declare interface IPayload {
     unique?: string
 }
 
-declare interface IToken {
-    userid: number
-    firstName: string
-    lastName: string
-    role: 'guest' | 'user' | 'admin'
-    token: string
-}
-
-declare interface IUser {
-    id: number
-    username: string
-    role: 'guest' | 'user' | 'admin'
-    hash: string
-    firstName: string
-    lastName: string
-    numberOfNotes: number
-    notes?: INote[]
-    _created: Date
-}
-
-// Redux state
-declare interface IReduxState {
-    token: IToken
-    failedLoginAttempts: number
-    visibleNotes: INote[]
-    draft: {
+declare namespace DB {
+    interface User {
+        id: number
+        username: string
+        role: string
+        hash: string
+        firstName: string
+        lastName: string
+        _created: Date
+    }
+    interface Note {
+        id: number
+        userid: number
         content: string
-        offset: IPos
-        noteId?: number
+        posx: number
+        posy: number
+        _created: Date
+    }
+    interface Draft {
+        id: number
+        note_id: number
+        content: string
+        posx: number
+        posy: number
+        user_id: number
+        _created: Date
+    }
+    interface Token {
+        id: number
+        userid: number
+        token: string
+        expires: Date
+        _created: Date
     }
 }
 
