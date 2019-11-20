@@ -18,7 +18,7 @@ export const scalars = {
     UserRole: new GraphQLScalarType({
         name: 'UserRole',
         description: "The user's role as string",
-        serialize(role: IUser['role']) {
+        serialize(role: DB.User['role']) {
             if (!(role === 'admin' || role === 'guest' || role === 'user')) {
                 throw new ValidationError(`Invalid role ${role}`)
             }

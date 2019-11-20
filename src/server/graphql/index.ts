@@ -2,7 +2,7 @@
 
 import { ApolloServer } from 'apollo-server-express'
 
-import typeDefs from './types'
+import typeDefs from './schema.gql'
 import resolvers from './resolvers'
 
 export const graphqlServer = new ApolloServer({
