@@ -1,12 +1,16 @@
 /** @format */
 
-import { querys } from './querys'
-import { mutations } from './mutations'
+import { Query, Draft, Note, User } from './querys'
+import { Mutation } from './mutations'
 import { scalars } from './scalars'
+import { Resolvers } from '../../../graphql-types/types'
 
-const resolvers = {
-    ...querys,
-    ...mutations,
+const resolvers: Resolvers = {
+    Query,
+    Draft,
+    Note,
+    User,
+    Mutation,
     ...scalars,
 }
 

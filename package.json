@@ -6,11 +6,13 @@
     "scripts": {
         "watch:build": "npx webpack -w",
         "watch:server": "nodemon -r dotenv/config dist/server.js dotenv_config_path='config/.env'",
-        "dev": "npm-run-all --parallel watch:*",
+        "dev": "npm-run-all --parallel generate watch:*",
+        "build": "npm-run-all --sequential generate build:production",
         "start": "node dist/server.js",
-        "heroku-postbuild": "npx webpack",
+        "build:production": "webpack",
         "debug": "npm-run-all --parallel watch:build debug:server",
-        "debug:server": "nodemon --inspect -r dotenv/config dist/server.js dotenv_config_path='config/.env'"
+        "debug:server": "nodemon --inspect -r dotenv/config dist/server.js dotenv_config_path='config/.env'",
+        "generate": "graphql-codegen --config ./src/graphql-types/codegen.yml"
     },
     "keywords": [],
     "author": "",
@@ -20,6 +22,7 @@
         "@fortawesome/fontawesome-svg-core": "^1.2.25",
         "@fortawesome/free-solid-svg-icons": "^5.11.2",
         "@fortawesome/react-fontawesome": "^0.1.6",
+        "@graphql-codegen/cli": "^1.8.3",
         "@types/bcrypt": "^3.0.0",
         "@types/cors": "^2.8.6",
         "@types/dotenv": "^6.1.1",
@@ -78,6 +81,10 @@
         "webpack-node-externals": "^1.7.2"
     },
     "devDependencies": {
+        "@graphql-codegen/fragment-matcher": "1.8.3",
+        "@graphql-codegen/typescript": "1.8.3",
+        "@graphql-codegen/typescript-react-apollo": "1.8.3",
+        "@graphql-codegen/typescript-resolvers": "^1.8.3",
         "nodemon": "^1.19.1",
         "npm-check": "^5.9.0",
         "npm-run-all": "^4.1.3",

@@ -2,21 +2,21 @@
 
 import knextion from '.'
 
-export const getNote = (id: string) => {
+export const getDraft = (id: string) => {
     try {
-        return knextion('Notes')
+        return knextion('Drafts')
             .where({ id })
-            .select<[DB.Note]>()
-            .then((noteList) => noteList[0])
+            .select<[DB.Draft]>()
+            .then((draftList) => draftList[0])
     } catch (err) {
         console.error(err)
         throw new Error('Error querying database')
     }
 }
 
-export const getNotes = (ids?: string[]) => {
+export const getDrafts = (ids?: string[]) => {
     try {
-        let query = knextion('Notes').select<DB.Note[]>()
+        let query = knextion('Drafts').select<DB.Draft[]>()
         return ids ? query.whereIn('id', ids) : query
     } catch (err) {
         console.error(err)
@@ -24,11 +24,11 @@ export const getNotes = (ids?: string[]) => {
     }
 }
 
-export const getNotesByUser = (user_id: string) => {
+export const getDraftsByUser = (user_id: string) => {
     try {
-        knextion('Notes')
+        return knextion('Drafts')
             .where({ user_id })
-            .select<DB.Note[]>()
+            .select<DB.Draft[]>()
     } catch (err) {
         console.error(err)
         throw new Error('Error querying database')

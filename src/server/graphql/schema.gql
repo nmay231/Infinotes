@@ -4,10 +4,10 @@ scalar DateTime
 scalar Position
 scalar UserRole
 type Query {
-    note(id: ID!): Note
+    note(id: ID!): Note!
     notes(ids: [ID!]): [Note!]!
-    user(id: ID!): User
-    thisUser: User
+    user(id: ID!): User!
+    thisUser: User!
     draft(id: ID!): Draft!
     drafts: [Draft!]!
 }
@@ -39,7 +39,7 @@ type Note {
 }
 type Draft {
     id: ID!
-    noteId: ID
+    note: Note
     content: String!
     offset: Position!
     user: User!

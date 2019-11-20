@@ -1,0 +1,18 @@
+# @format
+
+overwrite: true
+schema: './src/server/graphql/schema.gql'
+# documents: "src/**/*.graphql"
+generates:
+    ./src/graphql-types/types.tsx:
+        plugins:
+            - 'typescript'
+            - 'typescript-resolvers'
+            - 'typescript-react-apollo'
+            - 'fragment-matcher'
+        config:
+            contextType: '{user: IUser}'
+            scalars:
+                DateTime: Date
+                Position: IPos
+                UserRole: "'admin' | 'user' | 'guest'"
