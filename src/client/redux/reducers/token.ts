@@ -6,9 +6,9 @@ import { userActions } from '../actions/userActions'
 
 export const dummyUser: IToken = {
     token: undefined,
-    firstName: 'first',
-    lastName: 'last',
-    userid: -1,
+    first_name: 'first',
+    last_name: 'last',
+    user_id: -1,
     role: 'guest',
 }
 

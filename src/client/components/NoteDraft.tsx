@@ -81,7 +81,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
                     <StyledButton btnStyle="success" disabled={!content.length} onPress={save}>
                         <FontAwesomeIcon icon="check" />
                     </StyledButton>
-                    {draft.noteId && (
+                    {draft.note_id && (
                         <StyledButton btnStyle="primary" className="ml-2" onPress={revert}>
                             <FontAwesomeIcon icon="undo-alt" />
                         </StyledButton>

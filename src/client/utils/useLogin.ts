@@ -36,15 +36,15 @@ const useLogin = () => {
     }
 
     const register = async (
-        firstName: string,
-        lastName: string,
+        first_name: string,
+        last_name: string,
         username: string,
         password: string,
     ) => {
         try {
             let user = (await Axios.post<IToken>(REGISTER_ENDPOINT, {
-                firstName,
-                lastName,
+                first_name,
+                last_name,
                 username,
                 password,
             })).data
@@ -94,7 +94,7 @@ const useLogin = () => {
         wasUser: Boolean(localStorage.getItem('wasUser')),
 
         // Do I really need this?
-        tellIfUser: (userid: number) => token.userid === userid,
+        tellIfUser: (user_id: number) => token.user_id === user_id,
     }
 }
 

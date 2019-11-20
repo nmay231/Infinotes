@@ -35,7 +35,7 @@ router.post('/', isUser, async (req, res) => {
     try {
         let [id] = await knextion('Notes').insert<[number]>({
             content,
-            userid: req.user.id,
+            user_id: req.user.id,
             posx: offset.x,
             posy: offset.y,
         })
@@ -59,7 +59,7 @@ router.put('/:id', isUser, async (req, res) => {
             .select<INote[]>()
         if (!note) {
             return res.status(422).json('Invalid id')
-        } else if (note.userid !== req.user.id && req.user.role !== 'admin') {
+        } else if (note.user_id !== req.user.id && req.user.role !== 'admin') {
             return res
                 .status(401)
                 .json('You do not have significant permissions to perform this action')
@@ -83,10 +83,10 @@ router.delete('/:id', isUser, async (req, res) => {
     let id = req.params.id
 
     try {
-        let [{ userid }] = await knextion('Notes')
+        let [{ user_id }] = await knextion('Notes')
             .where({ id })
-            .select<INote[]>('userid')
-        if (userid !== req.user.id && req.user.role !== 'admin') {
+            .select<INote[]>('user_id')
+        if (user_id !== req.user.id && req.user.role !== 'admin') {
             return res
                 .status(401)
                 .json('You do not have significant permissions to perform this action')

@@ -5,10 +5,10 @@ import * as jwt from 'jsonwebtoken'
 import * as moment from 'moment'
 
 import knextion from '../../db'
-// tokens(id, userid, token, expires, _created)
+// tokens(id, user_id, token, expires, _created)
 
 export const CreateToken = async (payload: IPayload) => {
-    let [tokenid] = await knextion('Tokens').insert<number[]>({ userid: payload.userid })
+    let [tokenid] = await knextion('Tokens').insert<number[]>({ user_id: payload.user_id })
     payload.tokenid = tokenid
     payload.unique = crypto.randomBytes(32).toString('hex')
     payload.expires = moment(Date.now())
@@ -17,22 +17,22 @@ export const CreateToken = async (payload: IPayload) => {
     let token = jwt.sign(payload, process.env.AUTH_SECRET)
     await knextion('Tokens')
         .update({ token, expires: payload.expires })
-        .where({ userid: payload.userid })
+        .where({ user_id: payload.user_id })
     return token
 }
 
-export const RecoverToken = async (userid: number) => {
+export const RecoverToken = async (user_id: number) => {
     let tokenRow: { token: string; expires: Date }
     try {
         ;[tokenRow] = await knextion('Tokens')
-            .where({ userid })
+            .where({ user_id })
             .select<{ token: string; expires: Date }[]>()
     } catch (err) {
         return false
     }
     if (!tokenRow || moment(tokenRow.expires).isBefore(Date.now())) {
         await knextion('Tokens')
-            .where({ userid })
+            .where({ user_id })
             .delete()
         return false
     }

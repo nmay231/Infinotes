@@ -15,8 +15,8 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
 
     const { loginLocal, register } = useLogin()
 
-    const [firstName, setFirstName] = React.useState('')
-    const [lastName, setLastName] = React.useState('')
+    const [first_name, setfirst_name] = React.useState('')
+    const [last_name, setlast_name] = React.useState('')
     const [username, setUsername] = React.useState('')
     const [password, setPassword] = React.useState('')
     const [confirmPassword, setConfirmPassword] = React.useState('')
@@ -24,7 +24,7 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
     const handleSubmit = async () => {
         if (isRegister) {
             if (
-                !firstName.length ||
+                !first_name.length ||
                 !username.length ||
                 !password.length ||
                 !confirmPassword.length
@@ -34,7 +34,7 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
                 return alert('Passwords do not match')
             }
 
-            if (await register(firstName, lastName, username, password)) {
+            if (await register(first_name, last_name, username, password)) {
                 history.push('/')
             } else {
                 alert('Sorry, please try again later')
@@ -70,9 +70,9 @@ const LoginPage: React.FC<ILoginPageProps> = ({ history, location }) => {
                     <div className="card-body">
                         {isRegister && (
                             <>
-                                <FormField state={[firstName, setFirstName]} name="First Name" />
+                                <FormField state={[first_name, setfirst_name]} name="First Name" />
                                 <FormField
-                                    state={[lastName, setLastName]}
+                                    state={[last_name, setlast_name]}
                                     name="Last Name"
                                     optional
                                 />

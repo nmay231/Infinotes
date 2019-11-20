@@ -21,7 +21,7 @@ const MainPage: React.FC = () => {
                 rawNotes = await Promise.all<INote>(
                     rawNotes.map((note) =>
                         json<{ username: string }>(
-                            join(USERS_API, `${note.userid}`, 'username'),
+                            join(USERS_API, `${note.user_id}`, 'username'),
                         ).then(({ username }) => Promise.resolve({ ...note, username })),
                     ),
                 )

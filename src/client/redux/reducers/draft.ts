@@ -10,7 +10,7 @@ const draft: Reducer<IReduxState['draft']> = (state = null, action) => {
             return {
                 content: action.content,
                 offset: action.offset,
-                noteId: action.noteId,
+                note_id: action.note_id,
             }
         case noteActions.SAVE_DRAFT: // Discard the draft after manually saving it
         case noteActions.DISCARD_DRAFT:

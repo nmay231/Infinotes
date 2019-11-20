@@ -14,21 +14,21 @@ declare interface INote {
     content: string
     offset: IPos
     username: string
-    userid: number
+    user_id: number
 }
 
 // Auth
 declare interface IPayload {
-    userid: number
+    user_id: number
     tokenid?: number
     expires?: Date
     unique?: string
 }
 
 declare interface IToken {
-    userid: number
-    firstName: string
-    lastName: string
+    user_id: number
+    first_name: string
+    last_name: string
     role: 'guest' | 'user' | 'admin'
     token: string
 }
@@ -38,8 +38,8 @@ declare interface IUser {
     username: string
     role: 'guest' | 'user' | 'admin'
     hash: string
-    firstName: string
-    lastName: string
+    first_name: string
+    last_name: string
     numberOfNotes: number
     _created: Date
 }
@@ -52,7 +52,7 @@ declare interface IReduxState {
     draft: {
         content: string
         offset: IPos
-        noteId?: number
+        note_id?: number
     }
 }
 

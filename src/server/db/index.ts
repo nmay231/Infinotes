@@ -7,8 +7,8 @@ export interface User {
     username: string
     role: 'user' | 'guest' | 'admin'
     hash: string
-    firstName: string
-    lastName: string
+    first_name: string
+    last_name: string
     numberOfNotes: number
     _created: Date
 }

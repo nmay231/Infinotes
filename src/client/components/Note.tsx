@@ -23,9 +23,9 @@ const Note: React.FC<INoteProps> = ({ id, children, offset, username }) => {
     const notes = useSelector((state: IReduxState) => state.visibleNotes)
     const draft = useSelector((state: IReduxState) => state.draft)
 
-    const isEditable = (noteId: number) =>
+    const isEditable = (note_id: number) =>
         token.role === 'admin' ||
-        notes.filter((note) => note.id === noteId)[0].userid === token.userid
+        notes.filter((note) => note.id === note_id)[0].user_id === token.user_id
 
     const pressHandler: IPressHandler = ({ event }) => {
         if (
