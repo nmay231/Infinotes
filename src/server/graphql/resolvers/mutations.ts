@@ -1,7 +1,7 @@
 /** @format */
 import { AuthenticationError, UserInputError, ForbiddenError } from 'apollo-server-express'
 
-import { MutationResolvers } from '../../../generated/types'
+import { MutationResolvers } from '../../../graphql-types/types'
 import knex from '../../db'
 
 export const Mutation: MutationResolvers = {
