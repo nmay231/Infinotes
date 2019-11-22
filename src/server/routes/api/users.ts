@@ -1,29 +1,31 @@
 /** @format */
 
-import { Router } from 'express'
+// /** @format */
 
-import knextion from '../../db'
+// import { Router } from 'express'
 
-const router = Router()
+// import knextion from '../../db'
 
-router.get('/:id/username', async (req, res) => {
-    let id = req.params.id
-    if (!id) {
-        return res.status(422).json('Invalid id')
-    }
+// const router = Router()
 
-    try {
-        const [{ username }] = await knextion('Users')
-            .where({ id })
-            .select()
-        if (!username) {
-            return res.status(422).json('Invalid id')
-        }
-        res.status(200).json({ username })
-    } catch (err) {
-        console.error(err)
-        res.sendStatus(500)
-    }
-})
+// router.get('/:id/username', async (req, res) => {
+//     let id = req.params.id
+//     if (!id) {
+//         return res.status(422).json('Invalid id')
+//     }
 
-export default router
+//     try {
+//         const [{ username }] = await knextion('Users')
+//             .where({ id })
+//             .select()
+//         if (!username) {
+//             return res.status(422).json('Invalid id')
+//         }
+//         res.status(200).json({ username })
+//     } catch (err) {
+//         console.error(err)
+//         res.sendStatus(500)
+//     }
+// })
+
+// export default router

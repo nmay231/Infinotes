@@ -12,12 +12,12 @@ export const scalars = {
             if (typeof value.x !== 'number' || typeof value.y !== 'number') {
                 throw new ValidationError('Position must have shape {x: number, y: number}')
             }
-            return `${value.x},${value.y}`
+            return value
         },
-        parseValue(value: string) {
-            const [x, y] = value.split(',')
-            return { x, y }
-        },
+        // parseValue(value: string) {
+        //     const [x, y] = value.split(',')
+        //     return { x, y }
+        // },
     }),
     UserRole: new GraphQLScalarType({
         name: 'UserRole',

@@ -1,15 +1,17 @@
 /** @format */
 
-import { Router } from 'express'
+// /** @format */
 
-import NotesRouter from './notes'
-import UsersRouter from './users'
+// import { Router } from 'express'
 
-const router = Router()
+// import NotesRouter from './notes'
+// import UsersRouter from './users'
 
-router.use('/notes', NotesRouter)
-router.use('/users', UsersRouter)
+// const router = Router()
 
-router.use('*', (req, res) => res.status(404).send('Unknown Endpoint'))
+// router.use('/notes', NotesRouter)
+// router.use('/users', UsersRouter)
 
-export default router
+// router.use('*', (req, res) => res.status(404).send('Unknown Endpoint'))
+
+// export default router

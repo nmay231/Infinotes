@@ -12,9 +12,16 @@ const knextion = knex({
     },
 })
 
-export { getNote, getNotes, getNotesByUser } from './notes'
+export { getNote, getNotes, getNotesByUser, addNote, editNote, deleteNote } from './notes'
 export { getTokenByUserId } from './tokens'
 export { getUser, getUserByUsername } from './users'
-export { getDraft, getDrafts, getDraftsByUser } from './drafts'
+export {
+    getDraft,
+    getDrafts,
+    getDraftsByUser,
+    addDraft,
+    addDraftFromNote,
+    editDraft,
+} from './drafts'
 
 export default knextion

@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { RouteComponentProps, withRouter } from 'react-router'
 import gql from 'graphql-tag'
+import { Draft, Note as INote } from '../../schema/graphql'
 
 import usePress, { IPressHandler } from '../utils/usePress'
 import useLogin from '../utils/useLogin'
@@ -17,7 +18,7 @@ interface ICanvasProps extends RouteComponentProps {}
 
 const Canvas: React.FC<ICanvasProps> = ({ history }) => {
     const [newDraft, { loading: draftLoading, data: draftData, called }] = useMutation<{
-        newDraft: IDraft
+        newDraft: Draft
     }>(gql(newDraftMutation('id', 'noteId', 'content', 'offset')))
     const { data, loading, error } = useQuery<{ notes: INote[] }>(
         gql(getNotes(null, 'id', 'content', 'offset', { user: ['username'] })),

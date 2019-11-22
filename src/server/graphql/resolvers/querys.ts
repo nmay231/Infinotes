@@ -5,9 +5,17 @@ import {
     UserResolvers,
     NoteResolvers,
     DraftResolvers,
-} from '../../../graphql-types/types'
+    Draft as IDraft,
+} from '../../../schema/graphql'
 
-import knextion, { getUser, getNote, getDraft, getDraftsByUser } from '../../db'
+import knextion, {
+    getUser,
+    getNote,
+    getDraft,
+    getDraftsByUser,
+    getNotes,
+    getNotesByUser,
+} from '../../db'
 import {
     normalizeNote,
     normalizeDraft,
@@ -18,36 +26,40 @@ import {
 } from '../../db/normalizers'
 
 export const User: UserResolvers = {
-    fullName: (root) => root.firstName + ' ' + root.lastName,
-    numberOfNotes: (root) =>
-        knextion('Notes')
-            .where('user_id', root.id)
-            .count<number>()
-            .then((count) => count[0]['count(*)']),
+    fullName: (user) => user.firstName + ' ' + user.lastName,
+    numberOfNotes: (user) =>
+        knextion<DB.Note>('Notes')
+            .where('user_id', user.id)
+            .count<[{ count: number }]>('* as count')
+            .then((count) => count[0].count),
+    notes: (user) =>
+        getNotesByUser(user.id).then((notes) => notes.map((note) => normalizeNote(note))),
 }
 export const Note: NoteResolvers = {
-    user: (root) => normalizeUser(getUser(root.id).then(checkExists)),
+    user: (note) => normalizeUser(getUser((<DB.Note>(<any>note)).user_id).then(checkExists)),
 }
 export const Draft: DraftResolvers = {
-    note: (root) =>
-        (<DB.Draft>(<any>root)).note_id
-            ? normalizeNote(getNote((<any>root).note_id).then(checkExists))
+    note: (draft) =>
+        (<DB.Draft>(<any>draft)).note_id
+            ? normalizeNote(getNote((<any>draft).note_id).then(checkExists))
             : null,
-    user: (root) => normalizeUser(getUser((<any>root).user_id).then(checkExists)),
+    user: (draft) => normalizeUser(getUser((<any>draft).user_id).then(checkExists)),
 }
 
 export const Query: QueryResolvers = {
     note: (_, { id }) => normalizeNote(getNote(id).then(checkExists)),
-    notes: (_, { ids }) => ids.map((id) => normalizeNote(getNote(id).then(checkExists))),
+    notes: (_, { ids }) =>
+        ids
+            ? ids.map((id) => normalizeNote(getNote(id).then(checkExists)))
+            : getNotes().then((notes) => notes.map((note) => normalizeNote(note))),
     user: (_, { id }) => normalizeUser(getUser(id).then(checkExists)),
-    thisUser: (_, __, { user }) => checkExists(user && normalizeUser(getUser(user.id.toString()))),
+    thisUser: (_, __, { user }) => checkLoggedIn(user)(normalizeUser(getUser(user.id.toString()))),
     draft: (_, { id }, { user }) =>
-        normalizeDraft(getDraft(id))
-            .then(checkExists)
-            .then(checkLoggedIn(user))
-            .then(checkOwnerOrAdmin(user)),
+        checkOwnerOrAdmin(user)(normalizeDraft(checkExists(getDraft(id)))),
     drafts: (_, __, { user }) =>
-        getDraftsByUser(user.id.toString())
-            .then(checkLoggedIn(user))
-            .then((drafts) => drafts.map((draft) => normalizeDraft(draft))),
+        checkLoggedIn(user)(
+            getDraftsByUser(user.id.toString()).then((drafts) =>
+                drafts.map((draft) => normalizeDraft(draft)),
+            ),
+        ),
 }

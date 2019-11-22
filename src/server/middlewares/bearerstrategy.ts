@@ -13,9 +13,9 @@ passport.use(
             if (!payload) {
                 return done(null, false)
             }
-            let [user] = await knextion('Users')
-                .where({ id: payload.userid })
-                .select<IUser[]>()
+            let [user] = await knextion<DB.User>('Users')
+                .where({ id: payload.user_id })
+                .select()
             if (user) {
                 done(null, user)
             } else {

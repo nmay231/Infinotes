@@ -1,17 +1,16 @@
 # @format
 
 overwrite: true
-schema: './src/server/graphql/schema.gql'
+schema: './src/schema/schema.graphql'
 # documents: "src/**/*.graphql"
 generates:
-    ./src/graphql-types/types.tsx:
+    ./src/schema/graphql.ts:
         plugins:
             - 'typescript'
             - 'typescript-resolvers'
-            - 'typescript-react-apollo'
             - 'fragment-matcher'
         config:
-            contextType: '{user: IUser}'
+            contextType: '{user: DB.User}'
             scalars:
                 DateTime: Date
                 Position: IPos

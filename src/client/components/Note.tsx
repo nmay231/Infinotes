@@ -1,13 +1,14 @@
 /** @format */
 
 import * as React from 'react'
+import { Note } from '../../schema/graphql'
 
 import usePress, { IPressHandler } from '../utils/usePress'
 
 import Float from './Float'
 
 export interface INoteProps {
-    note: INote
+    note: Note
 }
 
 const footerStyle = {
@@ -23,7 +24,7 @@ const Note: React.FC<INoteProps> = ({
         user: { username },
     },
 }) => {
-    const isEditable = (noteId: number) => true
+    const isEditable = (noteId: string) => true
     // token.role === 'admin' ||
     // notes.filter((note) => note.id === noteId)[0].userid === token.userid
 

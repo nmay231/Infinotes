@@ -2,7 +2,7 @@
 
 const emptyToken: IToken = {
     token: null,
-    userid: -1,
+    user_id: '-1',
     firstName: null,
     lastName: null,
     role: 'guest',

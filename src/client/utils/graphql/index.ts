@@ -1,5 +1,7 @@
 /** @format */
 
+import { Note } from '../../../schema/graphql'
+
 export { useQuery, useMutation } from '@apollo/react-hooks'
 
 type TField<T> = (keyof T) | { [K in keyof T]?: TField<T[K]>[] }
@@ -22,11 +24,12 @@ const formatQuery = <T>(
     type: 'query' | 'mutation' | 'subscription',
     name: string,
     variables: (keyof T)[],
-) => formatField(`${type} ${name}`, [])
+    fields: TField<T>[],
+) => formatField(`${type} ${name}()`, fields)
 
 /** Note queries */
-export const getNote = (...noteFields: TField<INote>[]) =>
-    formatQuery<INote>('query', 'getNote', ['id', 'content', 'offset'])
+export const getNote = (...noteFields: TField<Note>[]) =>
+    formatQuery<Note>('query', 'getNote', ['id', 'content', 'offset'], [])
 
 export const fragment = <T>(type: string, ...fields: TField<T>[]) =>
     `

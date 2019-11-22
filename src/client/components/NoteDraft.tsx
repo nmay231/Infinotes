@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Draft } from '../../schema/graphql'
+import gql from 'graphql-tag'
 
 import usePress, { IPressHandler } from '../utils/usePress'
 
@@ -16,11 +18,10 @@ import {
     fragment,
     useQuery,
     getNote,
-    gql,
 } from '../utils/graphql'
 
 interface INoteDraftProps {
-    id: IDraft['id']
+    id: Draft['id']
 }
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
@@ -34,7 +35,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { data, loading, error } = useQuery<{ draft: IDraft }>(
+    const { data, loading, error } = useQuery<{ draft: Draft }>(
         gql(getDraft(id, 'id', 'noteId', 'content', 'offset')),
     )
     const [updateDraft] = useMutation(gql(updateDraftMutation('id', 'content', 'offset')))
@@ -113,7 +114,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
                     <StyledButton btnStyle="success" disabled={!content.length} onPress={save}>
                         <FontAwesomeIcon icon="check" />
                     </StyledButton>
-                    {data.draft.noteId && (
+                    {data.draft.note && (
                         <StyledButton btnStyle="primary" className="ml-2" onPress={revert}>
                             <FontAwesomeIcon icon="undo-alt" />
                         </StyledButton>

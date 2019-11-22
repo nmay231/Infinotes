@@ -18,7 +18,7 @@ type Mutation {
     noteToDraft(noteId: ID!): Draft!
     newDraft(content: String!, offset: Position!): Draft!
     updateDraft(id: ID!, content: String, offset: Position): Draft!
-    deleteDraft(id: ID!, saveToNote: Boolean!): Draft
+    deleteDraft(id: ID!, saveToNote: Boolean!): Note
 }
 type User {
     id: ID!

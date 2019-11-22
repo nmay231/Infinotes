@@ -9,45 +9,55 @@ declare interface IPos {
     y: number
 }
 
-declare interface INote {
-    id: number
-    content: string
-    offset: IPos
-    user: IUser
-}
+declare type Unresolved<T = any> = T | Promise<T>
 
-declare interface IDraft {
-    id: number
-    noteId?: number
-    content: string
-    offset: IPos
-    user: IUser
-}
+// declare interface INote {
+//     id: number
+//     content: string
+//     offset: IPos
+//     user: IUser
+// }
+
+// declare interface IDraft {
+//     id: number
+//     noteId?: number
+//     content: string
+//     offset: IPos
+//     user: IUser
+// }
 
 type UserRole = 'guest' | 'user' | 'admin'
-declare interface IUser {
-    id: number
-    username: string
-    role: UserRole
-    firstName: string
-    lastName: string
-    fullName: string
-    notes: INote[]
-    numberOfNotes: number
-    _created: Date
-}
+// declare interface IUser {
+//     id: number
+//     username: string
+//     role: UserRole
+//     firstName: string
+//     lastName: string
+//     fullName: string
+//     notes: INote[]
+//     numberOfNotes: number
+//     _created: Date
+// }
 
 // Auth
 declare interface IPayload {
-    userid: number
-    tokenid?: number
+    user_id: string
+    token_id?: string
     expires?: Date
     unique?: string
 }
 
+declare interface IToken {
+    user_id: string
+    firstName: string
+    lastName: string
+    role: UserRole
+    token: string
+}
+
 declare namespace DB {
     interface User {
-        id: number
+        id: string
         username: string
         role: UserRole
         hash: string
@@ -56,25 +66,25 @@ declare namespace DB {
         _created: Date
     }
     interface Note {
-        id: number
-        user_id: number
+        id: string
+        user_id: string
         content: string
         posx: number
         posy: number
         _created: Date
     }
     interface Draft {
-        id: number
-        note_id: number
+        id: string
+        note_id: string
         content: string
         posx: number
         posy: number
-        user_id: number
+        user_id: string
         _created: Date
     }
     interface Token {
-        id: number
-        user_id: number
+        id: string
+        user_id: string
         token: string
         expires: Date
         _created: Date
@@ -83,5 +93,5 @@ declare namespace DB {
 
 // Express
 declare namespace Express {
-    interface User extends IUser {}
+    interface User extends DB.User {}
 }

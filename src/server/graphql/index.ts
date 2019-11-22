@@ -2,11 +2,11 @@
 
 import { ApolloServer } from 'apollo-server-express'
 
-import typeDefs from './schema.gql'
+import { importSchema } from 'graphql-import'
 import resolvers from './resolvers'
 
 export const graphqlServer = new ApolloServer({
-    typeDefs,
+    typeDefs: importSchema('src/schema/schema.graphql'),
     resolvers,
     formatError(err) {
         // Remove stacktrace in production
