@@ -8,9 +8,9 @@ export type Scalars = {
   Boolean: boolean,
   Int: number,
   Float: number,
-  Position: IPos,
-  UserRole: 'admin' | 'user' | 'guest',
-  DateTime: Date,
+  Position: any,
+  UserRole: any,
+  DateTime: any,
 };
 
 
@@ -26,12 +26,12 @@ export type Draft = {
 export type Mutation = {
    __typename?: 'Mutation',
   addNote: Note,
-  editNote: Note,
-  deleteNote?: Maybe<Note>,
+  updateNote: Note,
+  deleteNote: Note,
   noteToDraft: Draft,
-  newDraft: Draft,
+  addDraft: Draft,
   updateDraft: Draft,
-  deleteDraft?: Maybe<Note>,
+  deleteDraft: Draft,
 };
 
 
@@ -41,7 +41,7 @@ export type MutationAddNoteArgs = {
 };
 
 
-export type MutationEditNoteArgs = {
+export type MutationUpdateNoteArgs = {
   id: Scalars['ID'],
   content?: Maybe<Scalars['String']>,
   offset?: Maybe<Scalars['Position']>
@@ -58,7 +58,7 @@ export type MutationNoteToDraftArgs = {
 };
 
 
-export type MutationNewDraftArgs = {
+export type MutationAddDraftArgs = {
   content: Scalars['String'],
   offset: Scalars['Position']
 };
@@ -72,8 +72,7 @@ export type MutationUpdateDraftArgs = {
 
 
 export type MutationDeleteDraftArgs = {
-  id: Scalars['ID'],
-  saveToNote: Scalars['Boolean']
+  id: Scalars['ID']
 };
 
 export type Note = {
@@ -234,7 +233,7 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime'
 }
 
-export type DraftResolvers<ContextType = {user: DB.User}, ParentType extends ResolversParentTypes['Draft'] = ResolversParentTypes['Draft']> = {
+export type DraftResolvers<ContextType = any, ParentType extends ResolversParentTypes['Draft'] = ResolversParentTypes['Draft']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
   note?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType>,
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
@@ -242,17 +241,17 @@ export type DraftResolvers<ContextType = {user: DB.User}, ParentType extends Res
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
 };
 
-export type MutationResolvers<ContextType = {user: DB.User}, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   addNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationAddNoteArgs, 'content' | 'offset'>>,
-  editNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationEditNoteArgs, 'id'>>,
-  deleteNote?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationDeleteNoteArgs, 'id'>>,
+  updateNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationUpdateNoteArgs, 'id'>>,
+  deleteNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationDeleteNoteArgs, 'id'>>,
   noteToDraft?: Resolver<ResolversTypes['Draft'], ParentType, ContextType, RequireFields<MutationNoteToDraftArgs, 'noteId'>>,
-  newDraft?: Resolver<ResolversTypes['Draft'], ParentType, ContextType, RequireFields<MutationNewDraftArgs, 'content' | 'offset'>>,
+  addDraft?: Resolver<ResolversTypes['Draft'], ParentType, ContextType, RequireFields<MutationAddDraftArgs, 'content' | 'offset'>>,
   updateDraft?: Resolver<ResolversTypes['Draft'], ParentType, ContextType, RequireFields<MutationUpdateDraftArgs, 'id'>>,
-  deleteDraft?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationDeleteDraftArgs, 'id' | 'saveToNote'>>,
+  deleteDraft?: Resolver<ResolversTypes['Draft'], ParentType, ContextType, RequireFields<MutationDeleteDraftArgs, 'id'>>,
 };
 
-export type NoteResolvers<ContextType = {user: DB.User}, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = {
+export type NoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   offset?: Resolver<ResolversTypes['Position'], ParentType, ContextType>,
@@ -263,7 +262,7 @@ export interface PositionScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'Position'
 }
 
-export type QueryResolvers<ContextType = {user: DB.User}, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   note?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryNoteArgs, 'id'>>,
   notes?: Resolver<Array<ResolversTypes['Note']>, ParentType, ContextType, QueryNotesArgs>,
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>,
@@ -272,7 +271,7 @@ export type QueryResolvers<ContextType = {user: DB.User}, ParentType extends Res
   drafts?: Resolver<Array<ResolversTypes['Draft']>, ParentType, ContextType>,
 };
 
-export type UserResolvers<ContextType = {user: DB.User}, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   role?: Resolver<ResolversTypes['UserRole'], ParentType, ContextType>,
@@ -288,7 +287,7 @@ export interface UserRoleScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'UserRole'
 }
 
-export type Resolvers<ContextType = {user: DB.User}> = {
+export type Resolvers<ContextType = any> = {
   DateTime?: GraphQLScalarType,
   Draft?: DraftResolvers<ContextType>,
   Mutation?: MutationResolvers<ContextType>,
@@ -304,24 +303,4 @@ export type Resolvers<ContextType = {user: DB.User}> = {
  * @deprecated
  * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
 */
-export type IResolvers<ContextType = {user: DB.User}> = Resolvers<ContextType>;
-
-
-      export interface IntrospectionResultData {
-        __schema: {
-          types: {
-            kind: string;
-            name: string;
-            possibleTypes: {
-              name: string;
-            }[];
-          }[];
-        };
-      }
-      const result: IntrospectionResultData = {
-  "__schema": {
-    "types": []
-  }
-};
-      export default result;
-    
+export type IResolvers<ContextType = any> = Resolvers<ContextType>;

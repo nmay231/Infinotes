@@ -5,8 +5,7 @@ import {
     UserResolvers,
     NoteResolvers,
     DraftResolvers,
-    Draft as IDraft,
-} from '../../../schema/graphql'
+} from '../../../graphql/resolvers'
 
 import knextion, {
     getUser,
@@ -57,6 +56,7 @@ export const Query: QueryResolvers = {
     draft: (_, { id }, { user }) =>
         checkOwnerOrAdmin(user)(normalizeDraft(checkExists(getDraft(id)))),
     drafts: (_, __, { user }) =>
+        // This should never check if owner; only on client side
         checkLoggedIn(user)(
             getDraftsByUser(user.id.toString()).then((drafts) =>
                 drafts.map((draft) => normalizeDraft(draft)),

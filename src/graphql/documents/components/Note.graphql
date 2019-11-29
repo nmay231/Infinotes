@@ -1,0 +1,9 @@
+# @format
+
+mutation NoteNoteToDraft($noteId: ID!) {
+    noteToDraft(noteId: $noteId) {
+        id
+        content
+        offset
+    }
+}

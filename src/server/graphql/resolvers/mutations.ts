@@ -1,6 +1,6 @@
 /** @format */
 
-import { MutationResolvers } from '../../../schema/graphql'
+import { MutationResolvers } from '../../../graphql/resolvers'
 
 import {
     getNote,
@@ -26,7 +26,7 @@ export const Mutation: MutationResolvers = {
         checkLoggedIn(user)
         return normalizeNote(getNote(addNote(user.id, { content, offset })))
     },
-    editNote: (_, { id, content, offset }, { user }) => {
+    updateNote: (_, { id, content, offset }, { user }) => {
         checkOwnerOrAdmin(user)(getNote(id))
         return normalizeNote(getNote(editNote(id, { content, offset })))
     },
@@ -34,7 +34,7 @@ export const Mutation: MutationResolvers = {
         checkOwnerOrAdmin(user)(getNote(id))
         return normalizeNote(deleteNote(id))
     },
-    newDraft: (_, { content, offset }, { user }) => {
+    addDraft: (_, { content, offset }, { user }) => {
         checkLoggedIn(user)
         return normalizeDraft(getDraft(addDraft(user.id, { content, offset })))
     },
@@ -47,23 +47,9 @@ export const Mutation: MutationResolvers = {
         checkOwnerOrAdmin(user)(getDraft(id))
         return normalizeDraft(getDraft(editDraft(id, { content, offset })))
     },
-    deleteDraft: async (_, { id, saveToNote }, { user }) => {
+    deleteDraft: async (_, { id }, { user }) => {
         let draft = await checkOwnerOrAdmin(user)(checkExists(getDraft(id)))
         await deleteDraft(id)
-        if (saveToNote) {
-            const note = draft.note_id
-                ? editNote(draft.note_id, {
-                      content: draft.content,
-                      offset: { x: draft.posx, y: draft.posy },
-                  })
-                : addNote(user.id, {
-                      content: draft.content,
-                      offset: { x: draft.posx, y: draft.posy },
-                  })
-
-            return normalizeNote(getNote(note))
-        } else {
-            return null
-        }
+        return normalizeDraft(draft)
     },
 }

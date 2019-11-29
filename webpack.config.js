@@ -55,6 +55,9 @@ const clientConfig = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.css', '.scss'],
+        alias: {
+            '@graphql': path.resolve(__dirname, 'src/graphql/'),
+        },
     },
     output: {
         filename: 'app.js',

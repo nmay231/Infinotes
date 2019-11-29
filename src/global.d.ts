@@ -11,33 +11,7 @@ declare interface IPos {
 
 declare type Unresolved<T = any> = T | Promise<T>
 
-// declare interface INote {
-//     id: number
-//     content: string
-//     offset: IPos
-//     user: IUser
-// }
-
-// declare interface IDraft {
-//     id: number
-//     noteId?: number
-//     content: string
-//     offset: IPos
-//     user: IUser
-// }
-
-type UserRole = 'guest' | 'user' | 'admin'
-// declare interface IUser {
-//     id: number
-//     username: string
-//     role: UserRole
-//     firstName: string
-//     lastName: string
-//     fullName: string
-//     notes: INote[]
-//     numberOfNotes: number
-//     _created: Date
-// }
+declare type UserRole = 'guest' | 'user' | 'admin'
 
 // Auth
 declare interface IPayload {

@@ -1,0 +1,72 @@
+# @format
+
+fragment NoteDraftDraftData on Draft {
+    id
+    content
+    offset
+    note {
+        id
+    }
+}
+
+fragment NoteDraftNoteData on Note {
+    id
+    content
+    offset
+    user {
+        id
+        username
+    }
+}
+
+query NoteDraft($id: ID!) {
+    draft(id: $id) {
+        ...NoteDraftDraftData
+    }
+}
+
+# TODO: split these up into smaller chunks and move common (simple) ops to global file (deleteNote, deleteDraft)
+
+mutation NoteDraftUpdateDraft($id: ID!, $content: String, $offset: Position) {
+    updateDraft(id: $id, content: $content, offset: $offset) {
+        ...NoteDraftDraftData
+    }
+}
+
+mutation NoteDraftSaveDraftToExisting(
+    $id: ID!
+    $noteId: ID!
+    $content: String!
+    $offset: Position!
+) {
+    deleteDraft(id: $id) {
+        ...NoteDraftDraftData
+    }
+    updateNote(id: $noteId, content: $content, offset: $offset) {
+        ...NoteDraftNoteData
+    }
+}
+
+mutation NoteDraftSaveNewDraft($id: ID!, $content: String!, $offset: Position!) {
+    deleteDraft(id: $id) {
+        ...NoteDraftDraftData
+    }
+    addNote(content: $content, offset: $offset) {
+        ...NoteDraftNoteData
+    }
+}
+
+mutation NoteDraftDeleteDraft($id: ID!) {
+    deleteDraft(id: $id) {
+        id
+        note {
+            ...NoteDraftNoteData
+        }
+    }
+}
+
+mutation NoteDraftDeleteNote($id: ID!) {
+    deleteNote(id: $id) {
+        id
+    }
+}

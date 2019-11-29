@@ -6,7 +6,7 @@ import { importSchema } from 'graphql-import'
 import resolvers from './resolvers'
 
 export const graphqlServer = new ApolloServer({
-    typeDefs: importSchema('src/schema/schema.graphql'),
+    typeDefs: importSchema('src/graphql/schema.graphql'),
     resolvers,
     formatError(err) {
         // Remove stacktrace in production

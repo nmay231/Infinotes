@@ -10,6 +10,11 @@ const emptyToken: IToken = {
 
 export const tokenHolder: IToken = { ...emptyToken }
 
+const token: IToken = JSON.parse(localStorage.getItem('token'))
+if (token) {
+    Object.assign(tokenHolder, token)
+}
+
 export const setToken = (token: Partial<IToken>) => {
     Object.assign(tokenHolder, token)
     localStorage.setItem('token', JSON.stringify(token))
@@ -61,20 +66,10 @@ const useLogin = () => {
         }
     }
 
-    const loginFromCache = () => {
-        const token: IToken = JSON.parse(localStorage.getItem('token'))
-        if (token) {
-            Object.assign(tokenHolder, token)
-            return true
-        }
-        return false
-    }
-
     return {
         logout,
         loginLocal,
         register,
-        loginFromCache,
 
         isLoggedIn: tokenHolder.role !== 'guest',
         isAdmin: Boolean(tokenHolder.role === 'admin'),

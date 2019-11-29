@@ -3,7 +3,7 @@
 import { Query, Draft, Note, User } from './querys'
 import { Mutation } from './mutations'
 import { scalars } from './scalars'
-import { Resolvers } from '../../../schema/graphql'
+import { Resolvers } from '../../../graphql/resolvers'
 
 const resolvers: Resolvers = {
     Query,

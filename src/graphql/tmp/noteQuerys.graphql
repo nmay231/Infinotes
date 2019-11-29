@@ -1,0 +1,53 @@
+# @format
+
+fragment noteData on Note {
+    id
+    content
+    offset
+}
+
+fragment noteWithUser on Note {
+    user {
+        id
+        username
+        role
+    }
+}
+
+query NoteData($id: ID!) {
+    note(id: $id) {
+        ...noteData
+    }
+}
+
+query NoteWithUser($id: ID!) {
+    note(id: $id) {
+        ...noteWithUser
+    }
+}
+
+query NoteDataWithUser($id: ID!) {
+    note(id: $id) {
+        ...noteData
+        ...noteWithUser
+    }
+}
+
+query NotesData($ids: [ID!]) {
+    notes(ids: $ids) {
+        ...noteData
+    }
+}
+
+query NotesWithUser($ids: [ID!]) {
+    notes(ids: $ids) {
+        ...noteWithUser
+    }
+}
+
+query NotesDataWithUser($ids: [ID!]) {
+    notes(ids: $ids) {
+        ...noteData
+        ...noteWithUser
+    }
+}

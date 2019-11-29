@@ -2,7 +2,7 @@
 
 import knextion from '.'
 
-import { Draft } from '../../schema/graphql'
+import { Draft } from '../../graphql/resolvers'
 
 export const getDraft = async (id: Unresolved<string>) => {
     try {

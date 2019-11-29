@@ -2,7 +2,7 @@
 
 import knextion from '.'
 
-import { Note } from '../../schema/graphql'
+import { Note } from '../../graphql/resolvers'
 
 export const getNote = async (id: Unresolved<string>) => {
     id = await Promise.resolve(id)

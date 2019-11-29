@@ -14,10 +14,6 @@ export const scalars = {
             }
             return value
         },
-        // parseValue(value: string) {
-        //     const [x, y] = value.split(',')
-        //     return { x, y }
-        // },
     }),
     UserRole: new GraphQLScalarType({
         name: 'UserRole',

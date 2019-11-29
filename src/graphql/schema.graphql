@@ -13,12 +13,12 @@ type Query {
 }
 type Mutation {
     addNote(content: String!, offset: Position!): Note!
-    editNote(id: ID!, content: String, offset: Position): Note!
-    deleteNote(id: ID!): Note
+    updateNote(id: ID!, content: String, offset: Position): Note!
+    deleteNote(id: ID!): Note!
     noteToDraft(noteId: ID!): Draft!
-    newDraft(content: String!, offset: Position!): Draft!
+    addDraft(content: String!, offset: Position!): Draft!
     updateDraft(id: ID!, content: String, offset: Position): Draft!
-    deleteDraft(id: ID!, saveToNote: Boolean!): Note
+    deleteDraft(id: ID!): Draft!
 }
 type User {
     id: ID!

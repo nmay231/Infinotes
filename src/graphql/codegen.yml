@@ -1,0 +1,30 @@
+# @format
+
+overwrite: true
+schema: './src/graphql/schema.graphql'
+documents: './src/graphql/documents/**/*'
+generates:
+    ./src/graphql/resolvers.ts:
+        plugins:
+            - 'typescript'
+            - 'typescript-resolvers'
+        contextType: '{user: DB.User}'
+        scalars:
+            DateTime: Date
+            Position: IPos
+            UserRole: "'admin' | 'user' | 'guest'"
+    ./src/graphql/querys.tsx:
+        plugins:
+            - 'typescript'
+            - 'typescript-operations'
+            - 'typescript-react-apollo'
+        config:
+            withComponent: false
+            withHOC: false
+            withHooks: true
+            addDocBlocks: false
+            typesPrefix: I
+            scalars:
+                DateTime: Date
+                Position: IPos
+                UserRole: "'admin' | 'user' | 'guest'"

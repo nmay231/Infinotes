@@ -5,7 +5,7 @@ import { Router } from 'express'
 import { HashPassword } from '../../utils/security/passwords'
 import { CreateToken } from '../../utils/security/tokens'
 import knextion from '../../db'
-// Users(id, username, role, hash, first_name, last_name, numberOfNotes, _created)
+// Users(id, username, role, hash, first_name, last_name, _created)
 
 const router = Router()
 

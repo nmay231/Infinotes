@@ -2,7 +2,7 @@
 
 import { ForbiddenError, AuthenticationError } from 'apollo-server-express'
 
-import { Note, Draft, User } from '../../schema/graphql'
+import { Note, Draft, User } from '../../graphql/resolvers'
 
 export const checkExists = async <T = any>(obj: Unresolved<T>) => {
     obj = await Promise.resolve(obj)
