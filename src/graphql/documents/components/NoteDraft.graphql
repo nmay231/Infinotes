@@ -19,12 +19,6 @@ fragment NoteDraftNoteData on Note {
     }
 }
 
-query NoteDraft($id: ID!) {
-    draft(id: $id) {
-        ...NoteDraftDraftData
-    }
-}
-
 # TODO: split these up into smaller chunks and move common (simple) ops to global file (deleteNote, deleteDraft)
 
 mutation NoteDraftUpdateDraft($id: ID!, $content: String, $offset: Position) {

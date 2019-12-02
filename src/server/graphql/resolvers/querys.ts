@@ -7,20 +7,12 @@ import {
     DraftResolvers,
 } from '../../../graphql/resolvers'
 
-import knextion, {
-    getUser,
-    getNote,
-    getDraft,
-    getDraftsByUser,
-    getNotes,
-    getNotesByUser,
-} from '../../db'
+import knextion, { getUser, getNote, getDrafts, getNotes, getNotesByUser } from '../../db'
 import {
     normalizeNote,
     normalizeDraft,
     normalizeUser,
     checkExists,
-    checkOwnerOrAdmin,
     checkLoggedIn,
 } from '../../db/normalizers'
 
@@ -46,20 +38,15 @@ export const Draft: DraftResolvers = {
 }
 
 export const Query: QueryResolvers = {
-    note: (_, { id }) => normalizeNote(getNote(id).then(checkExists)),
     notes: (_, { ids }) =>
         ids
             ? ids.map((id) => normalizeNote(getNote(id).then(checkExists)))
             : getNotes().then((notes) => notes.map((note) => normalizeNote(note))),
     user: (_, { id }) => normalizeUser(getUser(id).then(checkExists)),
     thisUser: (_, __, { user }) => checkLoggedIn(user)(normalizeUser(getUser(user.id.toString()))),
-    draft: (_, { id }, { user }) =>
-        checkOwnerOrAdmin(user)(normalizeDraft(checkExists(getDraft(id)))),
-    drafts: (_, __, { user }) =>
+    drafts: (_, { ids }, { user }) =>
         // This should never check if owner; only on client side
         checkLoggedIn(user)(
-            getDraftsByUser(user.id.toString()).then((drafts) =>
-                drafts.map((draft) => normalizeDraft(draft)),
-            ),
+            getDrafts(ids).then((drafts) => drafts.map((draft) => normalizeDraft(draft))),
         ),
 }

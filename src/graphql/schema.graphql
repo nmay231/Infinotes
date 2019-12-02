@@ -4,17 +4,17 @@ scalar DateTime
 scalar Position
 scalar UserRole
 type Query {
-    note(id: ID!): Note!
     notes(ids: [ID!]): [Note!]!
+    drafts(ids: [ID!]): [Draft!]!
     user(id: ID!): User!
     thisUser: User!
-    draft(id: ID!): Draft!
-    drafts: [Draft!]!
 }
 type Mutation {
+    # Notes
     addNote(content: String!, offset: Position!): Note!
     updateNote(id: ID!, content: String, offset: Position): Note!
     deleteNote(id: ID!): Note!
+    # Drafts
     noteToDraft(noteId: ID!): Draft!
     addDraft(content: String!, offset: Position!): Draft!
     updateDraft(id: ID!, content: String, offset: Position): Draft!

@@ -25,9 +25,11 @@ export type Draft = {
 
 export type Mutation = {
    __typename?: 'Mutation',
+  /** Notes */
   addNote: Note,
   updateNote: Note,
   deleteNote: Note,
+  /** Drafts */
   noteToDraft: Draft,
   addDraft: Draft,
   updateDraft: Draft,
@@ -86,17 +88,10 @@ export type Note = {
 
 export type Query = {
    __typename?: 'Query',
-  note: Note,
   notes: Array<Note>,
+  drafts: Array<Draft>,
   user: User,
   thisUser: User,
-  draft: Draft,
-  drafts: Array<Draft>,
-};
-
-
-export type QueryNoteArgs = {
-  id: Scalars['ID']
 };
 
 
@@ -105,12 +100,12 @@ export type QueryNotesArgs = {
 };
 
 
-export type QueryUserArgs = {
-  id: Scalars['ID']
+export type QueryDraftsArgs = {
+  ids?: Maybe<Array<Scalars['ID']>>
 };
 
 
-export type QueryDraftArgs = {
+export type QueryUserArgs = {
   id: Scalars['ID']
 };
 
@@ -263,12 +258,10 @@ export interface PositionScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 }
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  note?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryNoteArgs, 'id'>>,
   notes?: Resolver<Array<ResolversTypes['Note']>, ParentType, ContextType, QueryNotesArgs>,
+  drafts?: Resolver<Array<ResolversTypes['Draft']>, ParentType, ContextType, QueryDraftsArgs>,
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>,
   thisUser?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
-  draft?: Resolver<ResolversTypes['Draft'], ParentType, ContextType, RequireFields<QueryDraftArgs, 'id'>>,
-  drafts?: Resolver<Array<ResolversTypes['Draft']>, ParentType, ContextType>,
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {

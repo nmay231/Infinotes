@@ -26,9 +26,11 @@ export type IDraft = {
 
 export type IMutation = {
    __typename?: 'Mutation',
+  /** Notes */
   addNote: INote,
   updateNote: INote,
   deleteNote: INote,
+  /** Drafts */
   noteToDraft: IDraft,
   addDraft: IDraft,
   updateDraft: IDraft,
@@ -87,17 +89,10 @@ export type INote = {
 
 export type IQuery = {
    __typename?: 'Query',
-  note: INote,
   notes: Array<INote>,
+  drafts: Array<IDraft>,
   user: IUser,
   thisUser: IUser,
-  draft: IDraft,
-  drafts: Array<IDraft>,
-};
-
-
-export type IQueryNoteArgs = {
-  id: Scalars['ID']
 };
 
 
@@ -106,12 +101,12 @@ export type IQueryNotesArgs = {
 };
 
 
-export type IQueryUserArgs = {
-  id: Scalars['ID']
+export type IQueryDraftsArgs = {
+  ids?: Maybe<Array<Scalars['ID']>>
 };
 
 
-export type IQueryDraftArgs = {
+export type IQueryUserArgs = {
   id: Scalars['ID']
 };
 
@@ -167,7 +162,7 @@ export type ICanvasDraftsOnBoardQuery = (
   { __typename?: 'Query' }
   & { drafts: Array<(
     { __typename?: 'Draft' }
-    & Pick<IDraft, 'id'>
+    & ICanvasDraftDataFragment
   )> }
 );
 
@@ -195,6 +190,10 @@ export type INoteNoteToDraftMutation = (
   & { noteToDraft: (
     { __typename?: 'Draft' }
     & Pick<IDraft, 'id' | 'content' | 'offset'>
+    & { note: Maybe<(
+      { __typename?: 'Note' }
+      & Pick<INote, 'id'>
+    )> }
   ) }
 );
 
@@ -213,19 +212,6 @@ export type INoteDraftNoteDataFragment = (
   & { user: (
     { __typename?: 'User' }
     & Pick<IUser, 'id' | 'username'>
-  ) }
-);
-
-export type INoteDraftQueryVariables = {
-  id: Scalars['ID']
-};
-
-
-export type INoteDraftQuery = (
-  { __typename?: 'Query' }
-  & { draft: (
-    { __typename?: 'Draft' }
-    & INoteDraftDraftDataFragment
   ) }
 );
 
@@ -372,10 +358,10 @@ export type CanvasNotesOnBoardQueryResult = ApolloReactCommon.QueryResult<ICanva
 export const CanvasDraftsOnBoardDocument = gql`
     query canvasDraftsOnBoard {
   drafts {
-    id
+    ...canvasDraftData
   }
 }
-    `;
+    ${CanvasDraftDataFragmentDoc}`;
 export function useCanvasDraftsOnBoardQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<ICanvasDraftsOnBoardQuery, ICanvasDraftsOnBoardQueryVariables>) {
         return ApolloReactHooks.useQuery<ICanvasDraftsOnBoardQuery, ICanvasDraftsOnBoardQueryVariables>(CanvasDraftsOnBoardDocument, baseOptions);
       }
@@ -405,6 +391,9 @@ export const NoteNoteToDraftDocument = gql`
     id
     content
     offset
+    note {
+      id
+    }
   }
 }
     `;
@@ -415,22 +404,6 @@ export function useNoteNoteToDraftMutation(baseOptions?: ApolloReactHooks.Mutati
 export type NoteNoteToDraftMutationHookResult = ReturnType<typeof useNoteNoteToDraftMutation>;
 export type NoteNoteToDraftMutationResult = ApolloReactCommon.MutationResult<INoteNoteToDraftMutation>;
 export type NoteNoteToDraftMutationOptions = ApolloReactCommon.BaseMutationOptions<INoteNoteToDraftMutation, INoteNoteToDraftMutationVariables>;
-export const NoteDraftDocument = gql`
-    query NoteDraft($id: ID!) {
-  draft(id: $id) {
-    ...NoteDraftDraftData
-  }
-}
-    ${NoteDraftDraftDataFragmentDoc}`;
-export function useNoteDraftQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<INoteDraftQuery, INoteDraftQueryVariables>) {
-        return ApolloReactHooks.useQuery<INoteDraftQuery, INoteDraftQueryVariables>(NoteDraftDocument, baseOptions);
-      }
-export function useNoteDraftLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<INoteDraftQuery, INoteDraftQueryVariables>) {
-          return ApolloReactHooks.useLazyQuery<INoteDraftQuery, INoteDraftQueryVariables>(NoteDraftDocument, baseOptions);
-        }
-export type NoteDraftQueryHookResult = ReturnType<typeof useNoteDraftQuery>;
-export type NoteDraftLazyQueryHookResult = ReturnType<typeof useNoteDraftLazyQuery>;
-export type NoteDraftQueryResult = ApolloReactCommon.QueryResult<INoteDraftQuery, INoteDraftQueryVariables>;
 export const NoteDraftUpdateDraftDocument = gql`
     mutation NoteDraftUpdateDraft($id: ID!, $content: String, $offset: Position) {
   updateDraft(id: $id, content: $content, offset: $offset) {

@@ -28,7 +28,7 @@ query canvasNotesOnBoard($ids: [ID!]) {
 
 query canvasDraftsOnBoard {
     drafts {
-        id
+        ...canvasDraftData
     }
 }
 

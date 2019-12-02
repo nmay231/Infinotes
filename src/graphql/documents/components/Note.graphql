@@ -5,5 +5,8 @@ mutation NoteNoteToDraft($noteId: ID!) {
         id
         content
         offset
+        note {
+            id
+        }
     }
 }

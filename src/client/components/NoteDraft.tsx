@@ -4,8 +4,8 @@ import * as React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import usePress, { IPressHandler } from '../utils/usePress'
+import { Draft, Note } from '@graphql/resolvers'
 import {
-    useNoteDraftQuery,
     useNoteDraftUpdateDraftMutation,
     useNoteDraftSaveDraftToExistingMutation,
     useNoteDraftSaveNewDraftMutation,
@@ -20,10 +20,10 @@ import MoveIcon from './MoveIcon'
 import StyledButton from './commons/StyledButton'
 
 interface INoteDraftProps {
-    id: string
+    draft: Pick<Draft, 'id' | 'content' | 'offset'> & { note: Pick<Draft['note'], 'id'> }
 }
 
-const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
+const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     const pressHandler: IPressHandler = ({ event }) => {
         if (event.type === 'tap') {
             document.getElementById('noteDraftInput').focus()
@@ -35,14 +35,17 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
 
     const { eventHandlers } = usePress(pressHandler)
 
-    const { data, loading, error } = useNoteDraftQuery({ variables: { id } })
     const [updateDraft] = useNoteDraftUpdateDraftMutation()
     const [deleteDraft] = useNoteDraftDeleteDraftMutation({
         update(store, { data: { deleteDraft } }) {
             const data = store.readQuery({ query: CanvasDraftsOnBoardDocument })
             store.writeQuery({
                 query: CanvasDraftsOnBoardDocument,
-                data: { drafts: (data as any).drafts.filter((draft: any) => draft.id !== id) },
+                data: {
+                    drafts: (data as any).drafts.filter(
+                        (existingDraft: Draft) => existingDraft.id !== draft.id,
+                    ),
+                },
             })
             if (deleteDraft.note) {
                 const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
@@ -58,7 +61,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
             const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
             store.writeQuery({
                 query: CanvasDraftsOnBoardDocument,
-                data: { drafts: drafts.filter((draft: any) => draft.id !== deleteDraft.id) },
+                data: { drafts: drafts.filter((draft: Draft) => draft.id !== deleteDraft.id) },
             })
             const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
             store.writeQuery({
@@ -72,7 +75,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
             const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
             store.writeQuery({
                 query: CanvasDraftsOnBoardDocument,
-                data: { drafts: drafts.filter((draft: any) => draft.id !== deleteDraft.id) },
+                data: { drafts: drafts.filter((draft: Draft) => draft.id !== deleteDraft.id) },
             })
             const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
             store.writeQuery({
@@ -86,13 +89,13 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
             const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
             store.writeQuery({
                 query: CanvasNotesOnBoardDocument,
-                data: { notes: notes.filter((note: any) => note.id !== deleteNote.id) },
+                data: { notes: notes.filter((note: Note) => note.id !== deleteNote.id) },
             })
         },
     })
 
-    const [offset, setOffset] = React.useState<IPos>(null)
-    const [content, setContent] = React.useState('')
+    const [offset, setOffset] = React.useState<IPos>(draft.offset)
+    const [content, setContent] = React.useState(draft.content)
 
     React.useEffect(() => {
         try {
@@ -100,30 +103,21 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
         } catch (err) {}
     }, [offset])
 
-    React.useEffect(() => {
-        if (error) {
-            console.error(error)
-            return
-        }
-        if (!loading) {
-            setContent(data.draft.content)
-            setOffset(data.draft.offset)
-        }
-    }, [loading, error])
-
     const save = () => {
-        if (data.draft.note) {
-            saveDraftToExisting({ variables: { id, content, offset, noteId: data.draft.note.id } })
+        if (draft.note) {
+            saveDraftToExisting({
+                variables: { id: draft.id, content, offset, noteId: draft.note.id },
+            })
         } else {
-            saveNewDraft({ variables: { id, content, offset } })
+            saveNewDraft({ variables: { id: draft.id, content, offset } })
         }
     }
-    const revert = () => deleteDraft({ variables: { id } })
+    const revert = () => deleteDraft({ variables: { id: draft.id } })
     const discard = () => {
-        if (data.draft.note) {
-            deleteNote({ variables: { id: data.draft.note.id } })
+        if (draft.note) {
+            deleteNote({ variables: { id: draft.note.id } })
         }
-        deleteDraft({ variables: { id } })
+        deleteDraft({ variables: { id: draft.id } })
     }
 
     const handleChange: React.ChangeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,9 +135,6 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
         }
     }
 
-    if (loading || !offset) {
-        return <></>
-    }
     return (
         <Float offset={offset} centerX>
             <MoveIcon move={moveDraft} />
@@ -167,7 +158,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ id }) => {
                     <StyledButton btnStyle="success" disabled={!content.length} onPress={save}>
                         <FontAwesomeIcon icon="check" />
                     </StyledButton>
-                    {data.draft.note && (
+                    {draft.note && (
                         <StyledButton btnStyle="primary" className="ml-2" onPress={revert}>
                             <FontAwesomeIcon icon="undo-alt" />
                         </StyledButton>

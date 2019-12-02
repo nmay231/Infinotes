@@ -42,10 +42,9 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                     },
                     update(store, { data: { addDraft } }) {
                         const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
-                        const { id, __typename } = addDraft
                         store.writeQuery({
                             query: CanvasDraftsOnBoardDocument,
-                            data: { drafts: [...drafts, { id, __typename }] },
+                            data: { drafts: [...drafts, addDraft] },
                         })
                     },
                 })
@@ -89,7 +88,7 @@ const Canvas: React.FC<ICanvasProps> = ({ history }) => {
                     {!loading && data.notes.map((note) => <Note key={note.id} note={note} />)}
                     {!draftLoading &&
                         draftData &&
-                        draftData.drafts.map((draft) => <NoteDraft key={draft.id} id={draft.id} />)}
+                        draftData.drafts.map((draft) => <NoteDraft key={draft.id} draft={draft} />)}
                 </Float>
             </div>
             <SelectionMenu resetView={() => setPos({ x: 0, y: 0 })} />
