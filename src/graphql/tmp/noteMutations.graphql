@@ -1,0 +1,31 @@
+# @format
+
+fragment noteData on Note {
+    id
+    content
+    offset
+}
+
+mutation addNote($content: String!, $offset: Position!) {
+    addNote(content: $content, offset: $offset) {
+        ...noteData
+    }
+}
+
+mutation editNote($id: ID!, $content: String, $offset: Position) {
+    editNote(id: $id, content: $content, offset: $offset) {
+        ...noteData
+    }
+}
+
+mutation deleteNote($id: ID!) {
+    deleteNote(id: $id) {
+        ...noteData
+    }
+}
+
+mutation deleteDraft($id: ID!, $saveToNote: Boolean!) {
+    deleteDraft(id: $id, saveToNote: $saveToNote) {
+        ...noteData
+    }
+}

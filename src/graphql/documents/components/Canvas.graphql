@@ -1,0 +1,45 @@
+# @format
+
+fragment canvasNoteData on Note {
+    id
+    content
+    offset
+    user {
+        id
+        username
+    }
+}
+
+fragment canvasDraftData on Draft {
+    id
+    content
+    offset
+    note {
+        id
+    }
+}
+
+query canvasNotesOnBoard($ids: [ID!]) {
+    # Add this in the future $boardName: String
+    notes(ids: $ids) {
+        ...canvasNoteData
+    }
+}
+
+query canvasDraftsOnBoard {
+    drafts {
+        ...canvasDraftData
+    }
+}
+
+mutation canvasNewDraft($content: String!, $offset: Position!) {
+    addDraft(content: $content, offset: $offset) {
+        ...canvasDraftData
+    }
+}
+
+# mutation canvasNoteToDraft($noteId: ID!) {
+#     noteToDraft(noteId: $noteId) {
+#         ...canvasDraftData
+#     }
+# }

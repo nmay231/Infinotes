@@ -5,11 +5,11 @@ import './bearerstrategy'
 import './localstrategy'
 import knextion from '../db'
 
-passport.serializeUser((user: IUser, done) => done(null, user.id))
+passport.serializeUser((user: DB.User, done) => done(null, user.id))
 
 passport.deserializeUser(async (id, done) => {
-    let user = await knextion('Users')
+    let [user] = await knextion<DB.User>('Users')
         .where({ id })
-        .select<IUser>()
+        .select()
     done(null, user)
 })
