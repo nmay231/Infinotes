@@ -38,6 +38,17 @@ export const getDraftsByUser = async (user_id: string) => {
     }
 }
 
+export const getDraftsByNote = async (note_id: string) => {
+    try {
+        return await knextion<DB.Draft>('Drafts')
+            .where({ note_id })
+            .select()
+    } catch (err) {
+        console.error(err)
+        throw new Error('Error querying database')
+    }
+}
+
 export const addDraft = async (
     user_id: string,
     { content, offset }: Pick<Draft, 'content' | 'offset'>,

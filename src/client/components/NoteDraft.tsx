@@ -91,6 +91,15 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
                 query: CanvasNotesOnBoardDocument,
                 data: { notes: notes.filter((note: Note) => note.id !== deleteNote.id) },
             })
+            const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
+            store.writeQuery({
+                query: CanvasDraftsOnBoardDocument,
+                data: {
+                    drafts: drafts.filter(
+                        (draft: Draft) => draft.note && draft.note.id !== deleteNote.id,
+                    ),
+                },
+            })
         },
     })
 
@@ -116,8 +125,9 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     const discard = () => {
         if (draft.note) {
             deleteNote({ variables: { id: draft.note.id } })
+        } else {
+            deleteDraft({ variables: { id: draft.id } })
         }
-        deleteDraft({ variables: { id: draft.id } })
     }
 
     const handleChange: React.ChangeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {

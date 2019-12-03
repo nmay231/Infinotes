@@ -19,7 +19,7 @@ import {
     normalizeDraft,
     checkExists,
 } from '../../db/normalizers'
-import { deleteDraft } from '../../db/drafts'
+import { deleteDraft, getDraftsByNote } from '../../db/drafts'
 
 export const Mutation: MutationResolvers = {
     addNote: (_, { content, offset }, { user }) => {
@@ -30,8 +30,11 @@ export const Mutation: MutationResolvers = {
         checkOwnerOrAdmin(user)(getNote(id))
         return normalizeNote(getNote(editNote(id, { content, offset })))
     },
-    deleteNote: (_, { id }, { user }) => {
-        checkOwnerOrAdmin(user)(getNote(id))
+    deleteNote: async (_, { id }, { user }) => {
+        const note = await checkOwnerOrAdmin(user)(getNote(id))
+        await getDraftsByNote(note.id).then((drafts) =>
+            drafts.map((draft) => deleteDraft(draft.id)),
+        )
         return normalizeNote(deleteNote(id))
     },
     addDraft: (_, { content, offset }, { user }) => {
