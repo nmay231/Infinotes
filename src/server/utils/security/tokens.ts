@@ -8,25 +8,27 @@ import knextion from '../../db'
 // tokens(id, user_id, token, expires, _created)
 
 export const CreateToken = async (payload: IPayload) => {
-    let [tokenid] = await knextion('Tokens').insert<number[]>({ user_id: payload.user_id })
-    payload.tokenid = tokenid
+    let [token_id] = await knextion<DB.Token>('Tokens').insert<[string]>({
+        user_id: payload.user_id,
+    })
+    payload.token_id = token_id
     payload.unique = crypto.randomBytes(32).toString('hex')
     payload.expires = moment(Date.now())
         .add(7, 'days')
         .toDate()
     let token = jwt.sign(payload, process.env.AUTH_SECRET)
-    await knextion('Tokens')
+    await knextion<DB.Token>('Tokens')
         .update({ token, expires: payload.expires })
         .where({ user_id: payload.user_id })
     return token
 }
 
-export const RecoverToken = async (user_id: number) => {
-    let tokenRow: { token: string; expires: Date }
+export const RecoverToken = async (user_id: string) => {
+    let tokenRow: DB.Token
     try {
-        ;[tokenRow] = await knextion('Tokens')
+        ;[tokenRow] = await knextion<DB.Token>('Tokens')
             .where({ user_id })
-            .select<{ token: string; expires: Date }[]>()
+            .select()
     } catch (err) {
         return false
     }
@@ -45,10 +47,15 @@ export const ValidateToken = async (token: string) => {
     if (!payload) {
         return false
     }
-    let [tokenid] = await knextion('Tokens')
-        .where({ id: payload.tokenid })
-        .select<number[]>()
-    if (!tokenid) {
+    let token_id: string
+    try {
+        ;[token_id] = await knextion('Tokens')
+            .where({ id: payload.token_id })
+            .select<[string]>()
+    } catch (err) {
+        return false
+    }
+    if (!token_id) {
         return false
     } else {
         return payload

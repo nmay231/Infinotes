@@ -30,6 +30,7 @@ const serverConfig = {
         __dirname: false,
     },
     externals: [nodeExternals()],
+    devtool: 'cheap-eval-source-map',
 }
 
 const clientConfig = {
@@ -54,6 +55,9 @@ const clientConfig = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.css', '.scss'],
+        alias: {
+            '@graphql': path.resolve(__dirname, 'src/graphql/'),
+        },
     },
     output: {
         filename: 'app.js',

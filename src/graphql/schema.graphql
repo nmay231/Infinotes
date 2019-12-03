@@ -1,0 +1,46 @@
+# @format
+
+scalar DateTime
+scalar Position
+scalar UserRole
+type Query {
+    notes(ids: [ID!]): [Note!]!
+    drafts(ids: [ID!]): [Draft!]!
+    user(id: ID!): User!
+    thisUser: User!
+}
+type Mutation {
+    # Notes
+    addNote(content: String!, offset: Position!): Note!
+    updateNote(id: ID!, content: String, offset: Position): Note!
+    deleteNote(id: ID!): Note!
+    # Drafts
+    noteToDraft(noteId: ID!): Draft!
+    addDraft(content: String!, offset: Position!): Draft!
+    updateDraft(id: ID!, content: String, offset: Position): Draft!
+    deleteDraft(id: ID!): Draft!
+}
+type User {
+    id: ID!
+    username: String!
+    role: UserRole!
+    firstName: String!
+    lastName: String
+    fullName: String!
+    notes: [Note!]!
+    numberOfNotes: Int!
+    _created: DateTime!
+}
+type Note {
+    id: ID!
+    content: String!
+    offset: Position!
+    user: User!
+}
+type Draft {
+    id: ID!
+    note: Note
+    content: String!
+    offset: Position!
+    user: User!
+}

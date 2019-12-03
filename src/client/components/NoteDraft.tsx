@@ -1,19 +1,26 @@
 /** @format */
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import useLogin from '../utils/useLogin'
 import usePress, { IPressHandler } from '../utils/usePress'
-import { discardDraft, revertDraft, saveDraft } from '../redux/actions/noteActions'
+import { Draft, Note } from '@graphql/resolvers'
+import {
+    useNoteDraftUpdateDraftMutation,
+    useNoteDraftSaveDraftToExistingMutation,
+    useNoteDraftSaveNewDraftMutation,
+    useNoteDraftDeleteDraftMutation,
+    useNoteDraftDeleteNoteMutation,
+    CanvasDraftsOnBoardDocument,
+    CanvasNotesOnBoardDocument,
+} from '@graphql/querys'
 
 import Float from './Float'
 import MoveIcon from './MoveIcon'
 import StyledButton from './commons/StyledButton'
 
 interface INoteDraftProps {
-    draft: IReduxState['draft']
+    draft: Pick<Draft, 'id' | 'content' | 'offset'> & { note: Pick<Draft['note'], 'id'> }
 }
 
 const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
@@ -27,10 +34,76 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
     }
 
     const { eventHandlers } = usePress(pressHandler)
-    const { json } = useLogin()
-    const dispatch = useDispatch()
 
-    const [offset, setOffset] = React.useState(draft.offset)
+    const [updateDraft] = useNoteDraftUpdateDraftMutation()
+    const [deleteDraft] = useNoteDraftDeleteDraftMutation({
+        update(store, { data: { deleteDraft } }) {
+            const data = store.readQuery({ query: CanvasDraftsOnBoardDocument })
+            store.writeQuery({
+                query: CanvasDraftsOnBoardDocument,
+                data: {
+                    drafts: (data as any).drafts.filter(
+                        (existingDraft: Draft) => existingDraft.id !== draft.id,
+                    ),
+                },
+            })
+            if (deleteDraft.note) {
+                const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
+                store.writeQuery({
+                    query: CanvasNotesOnBoardDocument,
+                    data: { notes: [...notes, deleteDraft.note] },
+                })
+            }
+        },
+    })
+    const [saveNewDraft] = useNoteDraftSaveNewDraftMutation({
+        update(store, { data: { deleteDraft, addNote } }) {
+            const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
+            store.writeQuery({
+                query: CanvasDraftsOnBoardDocument,
+                data: { drafts: drafts.filter((draft: Draft) => draft.id !== deleteDraft.id) },
+            })
+            const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
+            store.writeQuery({
+                query: CanvasNotesOnBoardDocument,
+                data: { notes: [...notes, addNote] },
+            })
+        },
+    })
+    const [saveDraftToExisting] = useNoteDraftSaveDraftToExistingMutation({
+        update(store, { data: { deleteDraft, updateNote } }) {
+            const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
+            store.writeQuery({
+                query: CanvasDraftsOnBoardDocument,
+                data: { drafts: drafts.filter((draft: Draft) => draft.id !== deleteDraft.id) },
+            })
+            const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
+            store.writeQuery({
+                query: CanvasNotesOnBoardDocument,
+                data: { notes: [...notes, updateNote] },
+            })
+        },
+    })
+    const [deleteNote] = useNoteDraftDeleteNoteMutation({
+        update(store, { data: { deleteNote } }) {
+            const { notes } = store.readQuery({ query: CanvasNotesOnBoardDocument })
+            store.writeQuery({
+                query: CanvasNotesOnBoardDocument,
+                data: { notes: notes.filter((note: Note) => note.id !== deleteNote.id) },
+            })
+            const { drafts } = store.readQuery({ query: CanvasDraftsOnBoardDocument })
+            store.writeQuery({
+                query: CanvasDraftsOnBoardDocument,
+                data: {
+                    drafts: drafts.filter(
+                        (draft: Draft) => draft.note && draft.note.id !== deleteNote.id,
+                    ),
+                },
+            })
+        },
+    })
+
+    const [offset, setOffset] = React.useState<IPos>(draft.offset)
     const [content, setContent] = React.useState(draft.content)
 
     React.useEffect(() => {
@@ -39,9 +112,23 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
         } catch (err) {}
     }, [offset])
 
-    const save = () => dispatch(saveDraft({ content, offset }, json))
-    const revert = () => dispatch(revertDraft(json))
-    const discard = () => dispatch(discardDraft(json))
+    const save = () => {
+        if (draft.note) {
+            saveDraftToExisting({
+                variables: { id: draft.id, content, offset, noteId: draft.note.id },
+            })
+        } else {
+            saveNewDraft({ variables: { id: draft.id, content, offset } })
+        }
+    }
+    const revert = () => deleteDraft({ variables: { id: draft.id } })
+    const discard = () => {
+        if (draft.note) {
+            deleteNote({ variables: { id: draft.note.id } })
+        } else {
+            deleteDraft({ variables: { id: draft.id } })
+        }
+    }
 
     const handleChange: React.ChangeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
@@ -81,7 +168,7 @@ const NoteDraft: React.FC<INoteDraftProps> = ({ draft }) => {
                     <StyledButton btnStyle="success" disabled={!content.length} onPress={save}>
                         <FontAwesomeIcon icon="check" />
                     </StyledButton>
-                    {draft.note_id && (
+                    {draft.note && (
                         <StyledButton btnStyle="primary" className="ml-2" onPress={revert}>
                             <FontAwesomeIcon icon="undo-alt" />
                         </StyledButton>

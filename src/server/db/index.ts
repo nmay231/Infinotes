@@ -2,17 +2,6 @@
 
 import * as knex from 'knex'
 
-export interface User {
-    id: number
-    username: string
-    role: 'user' | 'guest' | 'admin'
-    hash: string
-    first_name: string
-    last_name: string
-    numberOfNotes: number
-    _created: Date
-}
-
 const knextion = knex({
     client: 'mysql',
     connection: {
@@ -22,5 +11,17 @@ const knextion = knex({
         password: process.env.DB_PASSWORD,
     },
 })
+
+export { getNote, getNotes, getNotesByUser, addNote, editNote, deleteNote } from './notes'
+export { getTokenByUserId } from './tokens'
+export { getUser, getUserByUsername } from './users'
+export {
+    getDraft,
+    getDrafts,
+    getDraftsByUser,
+    addDraft,
+    addDraftFromNote,
+    editDraft,
+} from './drafts'
 
 export default knextion
