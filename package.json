@@ -45,7 +45,7 @@
         "apollo-link": "^1.2.13",
         "apollo-link-http": "^1.5.16",
         "apollo-server-express": "^2.9.7",
-        "bcrypt": "^3.0.6",
+        "bcrypt": "^5.0.0",
         "bootstrap": "^4.3.1",
         "cors": "^2.8.5",
         "css-loader": "^1.0.1",
